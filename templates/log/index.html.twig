@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Reading Log{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/book-styles.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="books-container">
+    <div class="books-header">
+        <h1>📖 Reading Log</h1>
+        <a href="{{ path('app_read_log_new') }}" class="btn-base btn-new">+ Add New Entry</a>
+    </div>
+
+    <table class="table modern-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Start Date</th>
+                <th>Finish Date</th>
+                <th>Rating</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for read_log in read_logs %}
+            {% if read_log is not null and read_log is not empty %}
+            <tr>
+                <td>{{ read_log.id ?? '' }}</td>
+                <td class="purchase-date">{{ read_log.startDate ? read_log.startDate|date('Y-m-d') : '' }}</td>
+                <td class="purchase-date">{{ read_log.finishDate ? read_log.finishDate|date('Y-m-d') : '' }}</td>
+                <td><span class="pages-info">{{ read_log.rating ?? '' }}</span></td>
+                <td class="book-author">{{ read_log.notes ?? '' }}</td>
+                <td>
+                    {% if read_log.id is not null %}
+                    <a href="{{ path('app_read_log_show', {'id': read_log.id}) }}" class="action-btn btn-show">👁 Show</a>
+                    <a href="{{ path('app_read_log_edit', {'id': read_log.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        {% else %}
+            <tr>
+                <td colspan="6" class="no-records">📖 No reading log entries found. Start tracking your reading!</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
