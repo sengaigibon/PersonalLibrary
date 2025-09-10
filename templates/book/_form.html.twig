@@ -1,4 +1,38 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.title) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.author) }}
+        {{ form_widget(form.author, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.author) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.isbn) }}
+        <div class="input-group">
+            {{ form_widget(form.isbn, {'attr': {'class': 'form-control'}}) }}
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary" id="search-isbn-btn">Search</button>
+            </div>
+        </div>
+        {{ form_errors(form.isbn) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.pages) }}
+        {{ form_widget(form.pages, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.pages) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.purchaseDate) }}
+        {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.purchaseDate) }}
+    </div>
+
+    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
 {{ form_end(form) }}

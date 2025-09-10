@@ -2,10 +2,20 @@
 
 {% block title %}New Book{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/book-styles.css') }}">
+{% endblock %}
+
 {% block body %}
-    <h1>Create new Book</h1>
+<div class="form-container">
+    <div class="form-header">
+        <h1>📚 Create New Book</h1>
+        <a href="{{ path('app_dashboard_books') }}" class="btn-base btn-back">← Back to Library</a>
+    </div>
 
-    {{ include('book/_form.html.twig') }}
-
-    <a href="{{ path('app_dashboard_books') }}">back to list</a>
+    <div class="form-card">
+        {{ include('book/_form.html.twig') }}
+    </div>
+</div>
 {% endblock %}

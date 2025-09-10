@@ -2,12 +2,33 @@
 
 {% block title %}Edit Book{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/book-styles.css') }}">
+{% endblock %}
+
 {% block body %}
-    <h1>Edit Book</h1>
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>✏️ Edit Book</h1>
+        <a href="{{ path('app_dashboard_books') }}" class="btn-base btn-back">← Back to Library</a>
+    </div>
 
-    {{ include('book/_form.html.twig', {'button_label': 'Update'}) }}
+    <div class="form-card">
+        {{ include('book/_form.html.twig', {'button_label': 'Update Book'}) }}
+    </div>
 
-    <a href="{{ path('app_dashboard_books') }}">back to list</a>
+    <div class="actions-card">
+        <div class="info-section">
+            <p style="color: #7f8c8d; margin: 0; font-style: italic;">
+                💡 Use the search button next to ISBN to auto-fill book details
+            </p>
+        </div>
 
-    {{ include('book/_delete_form.html.twig') }}
+        <div class="danger-zone">
+            <h3>⚠️ Danger Zone</h3>
+            {{ include('book/_delete_form.html.twig') }}
+        </div>
+    </div>
+</div>
 {% endblock %}
