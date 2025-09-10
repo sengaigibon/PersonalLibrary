@@ -18,7 +18,7 @@ final class DashboardController extends AbstractController
         ]);
     }
 
-    #[Route('/dashboard/books', name: 'app_dashboard_books')]
+    #[Route('/books', name: 'app_dashboard_books')]
     public function books(BookRepository $bookRepository): Response
     {
         return $this->render('dashboard/index.html.twig', [
@@ -27,7 +27,7 @@ final class DashboardController extends AbstractController
         ]);
     }
 
-    #[Route('/dashboard/reading-log', name: 'app_dashboard_reading_log')]
+    #[Route('/reading-log', name: 'app_dashboard_reading_log')]
     public function readingLog(ReadLogRepository $readLogRepository): Response
     {
         return $this->render('dashboard/index.html.twig', [
