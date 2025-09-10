@@ -27,11 +27,11 @@ final class DashboardController extends AbstractController
         ]);
     }
 
-    #[Route('/reading-log', name: 'app_dashboard_reading_log')]
+    #[Route('/read/log', name: 'app_dashboard_reading_log')]
     public function readingLog(ReadLogRepository $readLogRepository): Response
     {
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'reading_log',
+            'current_page' => 'logs',
             'read_logs' => $readLogRepository->findAll(),
         ]);
     }
