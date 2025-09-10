@@ -30,9 +30,9 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_read_log_index') }}">back to list</a>
+    <a href="{{ path('app_dashboard_reading_log') }}">back to list</a>
 
     <a href="{{ path('app_read_log_edit', {'id': read_log.id}) }}">edit</a>
 
-    {{ include('read_log/_delete_form.html.twig') }}
+    {{ include('log/_delete_form.html.twig') }}
 {% endblock %}
