@@ -34,5 +34,5 @@
         {{ form_errors(form.purchaseDate) }}
     </div>
 
-    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+    <button class="btn-base btn-primary {% if button_label|default('Save') == 'Update Book' %}btn-update{% else %}btn-save{% endif %}">{{ button_label|default('Save') }}</button>
 {{ form_end(form) }}

@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Book;
 use App\Form\BookType;
-use App\Repository\BookRepository;
+use App\Services\OpenLibraryApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -72,5 +72,13 @@ final class BookController extends AbstractController
         }
 
         return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/query/{isbn}', name: 'app_book_query', methods: ['GET'])]
+    public function query(Request $request, string $isbn, OpenLibraryApi $olAPI): Response
+    {
+        $result = $olAPI->getBookData($isbn);
+
+        return $this->json($result);
     }
 }
