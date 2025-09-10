@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - RR: The Reading Record{% endblock %}
+
+{% block body %}
+<style>
+    .dashboard-container {
+        display: flex;
+        height: 100vh;
+        font-family: sans-serif;
+    }
+
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 20px 0;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h3 {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 20px;
+        color: #ecf0f1;
+        border-bottom: 1px solid #34495e;
+        padding-bottom: 15px;
+    }
+
+    .menu-item {
+        display: block;
+        color: #bdc3c7;
+        text-decoration: none;
+        padding: 15px 20px;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+        background-color: #34495e;
+        color: white;
+        border-left-color: #3498db;
+    }
+
+    .menu-item.active {
+        background-color: #3498db;
+        color: white;
+        border-left-color: #2980b9;
+    }
+
+    .content-area {
+        flex: 1;
+        padding: 30px;
+        background-color: #f8f9fa;
+        overflow-y: auto;
+    }
+
+    .content-header {
+        margin-bottom: 30px;
+    }
+
+    .content-header h1 {
+        color: #2c3e50;
+        margin: 0;
+        font-size: 2rem;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>RR Menu</h3>
+
+        <a href="{{ path('app_dashboard') }}" class="menu-item {% if current_page == 'dashboard' %}active{% endif %}">
+            📊 Dashboard
+        </a>
+
+        <a href="{{ path('app_dashboard_books') }}" class="menu-item {% if current_page == 'books' %}active{% endif %}">
+            📚 Books
+        </a>
+
+        <a href="{{ path('app_dashboard_reading_log') }}" class="menu-item {% if current_page == 'reading_log' %}active{% endif %}">
+            📖 Reading Log
+        </a>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        {% if current_page == 'dashboard' %}
+            {% include 'dashboard/pages/dashboard.html.twig' %}
+        {% elseif current_page == 'books' %}
+            {% include 'book/index.html.twig' %}
+        {% elseif current_page == 'reading_log' %}
+            {% include 'read_log/index.html.twig' %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
