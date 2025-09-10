@@ -25,10 +25,11 @@ final class BookController extends AbstractController
             $entityManager->persist($book);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_book_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('book/new.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
+            'current_page' => 'new-book',
             'book' => $book,
             'form' => $form,
         ]);
@@ -37,7 +38,8 @@ final class BookController extends AbstractController
     #[Route('/{id}', name: 'app_book_show', methods: ['GET'])]
     public function show(Book $book): Response
     {
-        return $this->render('book/show.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
+            'current_page' => 'show-book',
             'book' => $book,
         ]);
     }
@@ -51,10 +53,11 @@ final class BookController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_book_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('book/edit.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
+            'current_page' => 'edit-book',
             'book' => $book,
             'form' => $form,
         ]);
@@ -68,6 +71,6 @@ final class BookController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_book_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
     }
 }
