@@ -3,41 +3,220 @@
 {% block title %}Book index{% endblock %}
 
 {% block body %}
-    <h1>Book index</h1>
+<style>
+    .books-container {
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
 
-    <table class="table">
+    .books-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .books-header h1 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin: 0;
+        font-size: 2.2rem;
+    }
+
+    .btn-new {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .modern-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: none;
+    }
+
+    .modern-table thead {
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+    }
+
+    .modern-table thead th {
+        color: white;
+        font-weight: 600;
+        padding: 18px 15px;
+        border: none;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .modern-table tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .modern-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .modern-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .modern-table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        border: none;
+        color: #2c3e50;
+    }
+
+    .action-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        margin: 0 3px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-show {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .btn-show:hover {
+        background-color: #229954;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .btn-edit {
+        background-color: #f39c12;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #e67e22;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .no-records {
+        text-align: center;
+        padding: 40px;
+        color: #7f8c8d;
+        font-style: italic;
+        font-size: 1.1rem;
+    }
+
+    .isbn-code {
+        font-family: 'Courier New', monospace;
+        background-color: #ecf0f1;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .book-title {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .book-author {
+        color: #7f8c8d;
+        font-style: italic;
+    }
+
+    .purchase-date {
+        color: #95a5a6;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .books-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modern-table {
+            font-size: 0.9rem;
+        }
+
+        .modern-table thead th {
+            padding: 12px 8px;
+        }
+
+        .modern-table tbody td {
+            padding: 10px 8px;
+        }
+    }
+</style>
+
+<div class="books-container">
+    <div class="books-header">
+        <h1>📚 Books Index</h1>
+        <a href="{{ path('app_book_new') }}" class="btn-new">+ Add New Book</a>
+    </div>
+
+    <table class="table modern-table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th>ID</th>
                 <th>Title</th>
                 <th>Author</th>
-                <th>Isbn</th>
+                <th>ISBN</th>
                 <th>Pages</th>
-                <th>PurchaseDate</th>
-                <th>actions</th>
+                <th>Purchase Date</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
         {% for book in books %}
+            {% if book is not null and book is not empty %}
             <tr>
-                <td>{{ book.id }}</td>
-                <td>{{ book.title }}</td>
-                <td>{{ book.author }}</td>
-                <td>{{ book.isbn }}</td>
-                <td>{{ book.pages }}</td>
-                <td>{{ book.purchaseDate ? book.purchaseDate|date('Y-m-d') : '' }}</td>
+                <td>{{ book.id ?? '' }}</td>
+                <td class="book-title">{{ book.title ?? '' }}</td>
+                <td class="book-author">{{ book.author ?? '' }}</td>
+                <td><span class="isbn-code">{{ book.isbn ?? '' }}</span></td>
+                <td>{{ book.pages ?? '' }}</td>
+                <td class="purchase-date">{{ book.purchaseDate ? book.purchaseDate|date('Y-m-d') : '' }}</td>
                 <td>
-                    <a href="{{ path('app_book_show', {'id': book.id}) }}">show</a>
-                    <a href="{{ path('app_book_edit', {'id': book.id}) }}">edit</a>
+                    {% if book.id is not null %}
+                    <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
+                    <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    {% endif %}
                 </td>
             </tr>
+            {% endif %}
         {% else %}
             <tr>
-                <td colspan="7">no records found</td>
+                <td colspan="7" class="no-records">📖 No books found. Start building your library!</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
-    <a href="{{ path('app_book_new') }}">Create new</a>
+</div>
 {% endblock %}
