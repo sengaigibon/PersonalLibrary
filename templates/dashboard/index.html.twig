@@ -92,6 +92,12 @@
             {% include 'book/index.html.twig' %}
         {% elseif current_page == 'reading_log' %}
             {% include 'read_log/index.html.twig' %}
+        {% elseif current_page == 'new-book' %}
+            {% include 'book/new.html.twig' %}
+        {% elseif current_page == 'show-book' %}
+            {% include 'book/show.html.twig' %}
+        {% elseif current_page == 'edit-book' %}
+            {% include 'book/edit.html.twig' %}
         {% endif %}
     </div>
 </div>
