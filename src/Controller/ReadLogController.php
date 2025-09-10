@@ -14,14 +14,6 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/read/log')]
 final class ReadLogController extends AbstractController
 {
-    #[Route(name: 'app_read_log_index', methods: ['GET'])]
-    public function index(ReadLogRepository $readLogRepository): Response
-    {
-        return $this->render('read_log/index.html.twig', [
-            'read_logs' => $readLogRepository->findAll(),
-        ]);
-    }
-
     #[Route('/new', name: 'app_read_log_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -33,10 +25,11 @@ final class ReadLogController extends AbstractController
             $entityManager->persist($readLog);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_read_log_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_reading_log', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('read_log/new.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
+            'current_page' => 'new-log',
             'read_log' => $readLog,
             'form' => $form,
         ]);
@@ -45,7 +38,8 @@ final class ReadLogController extends AbstractController
     #[Route('/{id}', name: 'app_read_log_show', methods: ['GET'])]
     public function show(ReadLog $readLog): Response
     {
-        return $this->render('read_log/show.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
+            'current_page' => 'show-log',
             'read_log' => $readLog,
         ]);
     }
@@ -59,10 +53,11 @@ final class ReadLogController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_read_log_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_reading_log', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('read_log/edit.html.twig', [
+        return $this->render('dashboard/index.html.twig', [
+            'current_page' => 'edit-log',
             'read_log' => $readLog,
             'form' => $form,
         ]);
@@ -76,6 +71,6 @@ final class ReadLogController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_read_log_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_dashboard_reading_log', [], Response::HTTP_SEE_OTHER);
     }
 }
