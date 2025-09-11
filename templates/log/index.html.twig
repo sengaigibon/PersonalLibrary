@@ -18,6 +18,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Book</th>
                 <th>Start Date</th>
                 <th>Finish Date</th>
                 <th>Rating</th>
@@ -26,18 +27,27 @@
             </tr>
         </thead>
         <tbody>
-        {% for read_log in read_logs %}
-            {% if read_log is not null and read_log is not empty %}
+        {% for reaLog in read_logs %}
+            {% if reaLog is not null and reaLog is not empty %}
             <tr>
-                <td>{{ read_log.id ?? '' }}</td>
-                <td class="purchase-date">{{ read_log.startDate ? read_log.startDate|date('Y-m-d') : '' }}</td>
-                <td class="purchase-date">{{ read_log.finishDate ? read_log.finishDate|date('Y-m-d') : '' }}</td>
-                <td>{{ read_log.rating ?? '' }}</td>
-                <td class="book-author">{{ read_log.notes ?? '' }}</td>
+                <td>{{ reaLog.id ?? '' }}</td>
+                <td>{{ reaLog.book.title ?? '' }}</td>
+                <td class="purchase-date">{{ reaLog.startDate ? reaLog.startDate|date('Y-m-d') : '' }}</td>
+                <td class="purchase-date">{{ reaLog.finishDate ? reaLog.finishDate|date('Y-m-d') : '' }}</td>
                 <td>
-                    {% if read_log.id is not null %}
-                    <a href="{{ path('app_read_log_show', {'id': read_log.id}) }}" class="action-btn btn-show">👁 Show</a>
-                    <a href="{{ path('app_read_log_edit', {'id': read_log.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    {% if reaLog.rating is not null and reaLog.rating > 0 %}
+                        {% for i in 1..reaLog.rating %}
+                            ⭐
+                        {% endfor %}
+                    {% else %}
+                        <span class="no-rating">No rating</span>
+                    {% endif %}
+                </td>
+                <td>{{ reaLog.notes ?? '' }}</td>
+                <td>
+                    {% if reaLog.id is not null %}
+                    <a href="{{ path('app_read_log_show', {'id': reaLog.id}) }}" class="action-btn btn-show">👁 Show</a>
+                    <a href="{{ path('app_read_log_edit', {'id': reaLog.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
                     {% endif %}
                 </td>
             </tr>
