@@ -20,7 +20,7 @@ class ReadLogType extends AbstractType
             ->add('notes')
             ->add('book', EntityType::class, [
                 'class' => Book::class,
-                'choice_label' => 'id',
+                'choice_label' => 'title',
             ])
         ;
     }
