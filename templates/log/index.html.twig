@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reading Log{% endblock %}
+{% block title %}ReadLog index{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -32,7 +32,7 @@
                 <td>{{ read_log.id ?? '' }}</td>
                 <td class="purchase-date">{{ read_log.startDate ? read_log.startDate|date('Y-m-d') : '' }}</td>
                 <td class="purchase-date">{{ read_log.finishDate ? read_log.finishDate|date('Y-m-d') : '' }}</td>
-                <td><span class="pages-info">{{ read_log.rating ?? '' }}</span></td>
+                <td>{{ read_log.rating ?? '' }}</td>
                 <td class="book-author">{{ read_log.notes ?? '' }}</td>
                 <td>
                     {% if read_log.id is not null %}
