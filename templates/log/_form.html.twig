@@ -1,4 +1,33 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="form-group">
+        {{ form_label(form.book) }}
+        {{ form_widget(form.book, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.book) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.startDate) }}
+        {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.startDate) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.finishDate) }}
+        {{ form_widget(form.finishDate, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.finishDate) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.rating) }}
+        {{ form_widget(form.rating, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.rating) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.notes) }}
+        {{ form_widget(form.notes, {'attr': {'class': 'form-control form-textarea'}}) }}
+        {{ form_errors(form.notes) }}
+    </div>
+
+    <button class="btn-base btn-primary btn-save">{{ button_label|default('Save') }}</button>
 {{ form_end(form) }}
