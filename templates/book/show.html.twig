@@ -45,7 +45,16 @@
         </table>
 
         <div class="action-buttons">
-            <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit-large">✏️ Edit Book</a>
+            <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="btn-base btn-primary btn-update">✏️ Edit Book</a>
+        </div>
+    </div>
+    <div class="actions-card">
+        <div class="info-section">
+            <p style="color: #7f8c8d; margin: 0; font-style: italic;">
+            </p>
+        </div>
+        <div class="danger-zone">
+            <h3>⚠️ Danger Zone</h3>
             {{ include('book/_delete_form.html.twig') }}
         </div>
     </div>
