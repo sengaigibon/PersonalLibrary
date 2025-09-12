@@ -30,7 +30,7 @@
         {% for book in books %}
             {% if book is not null and book is not empty %}
             <tr>
-                <td>{{ book.id ?? '' }}</td>
+                <td>{{ book.id }}</td>
                 <td class="book-title">{{ book.title ?? '' }}</td>
                 <td class="book-author">{{ book.author ?? '' }}</td>
                 <td><span class="isbn-code">{{ book.isbn ?? '' }}</span></td>
@@ -40,6 +40,8 @@
                     {% if book.id is not null %}
                     <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
                     <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    <a href="#" class="action-btn btn-start-reading" onclick="startReading({{ book.id }}, '{{ book.title|e('js') }}'); return false;">📖 Start Reading</a>
+                    <a href="#" class="action-btn btn-finish-reading" onclick="finishReading({{ book.id }}, '{{ book.title|e('js') }}'); return false;">✅ Finish Reading</a>
                     {% endif %}
                 </td>
             </tr>
