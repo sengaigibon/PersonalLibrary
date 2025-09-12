@@ -19,3 +19,4 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 .idea
+.DS_Store
