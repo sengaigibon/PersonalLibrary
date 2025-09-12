@@ -188,4 +188,4 @@ For support, please contact the development team or create an issue in the repos
 
 ---
 
-Built with ❤️ using Symfony and modern web technologies by jknight
+Built with ❤️ using Symfony and modern web technologies by [jknight](https://sengaigibon.github.io/en/)
