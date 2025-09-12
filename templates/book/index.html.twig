@@ -39,6 +39,15 @@
                     buttonElement.style.pointerEvents = 'none';
                     buttonElement.onclick = null;
 
+                    // Update the "Status" column to show reading status
+                    const row = document.getElementById('tr-book-' + bookId);
+                    if (row) {
+                        const statusCell = row.querySelector('.read-status');
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="status-reading">📖 Reading</span>';
+                        }
+                    }
+
                     console.log('Successfully started reading bookId:', bookId);
                 } else if (result.status === 400 && result.data.error) {
                     // Error: Show alert with error message
@@ -90,7 +99,7 @@
         <tbody>
         {% for book in books %}
             {% if book is not null and book is not empty %}
-            <tr>
+            <tr id="tr-book-{{ book.id }}">
                 <td>{{ book.id }}</td>
                 <td class="book-title">{{ book.title ?? '' }}</td>
                 <td class="book-author">{{ book.author ?? '' }}</td>
@@ -121,12 +130,11 @@
                     <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
 
                     {% if isCurrentlyReading %}
-                        <span class="action-btn btn-start-reading" style="background-color: #95a5a6; cursor: not-allowed; pointer-events: none;">📖 Reading now...</span>
+                        <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="finishReading({{ book.id }}); return false;">✅ Finish Reading</a>
                     {% else %}
                         <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="startReading(this); return false;">📖 Start Reading</a>
                     {% endif %}
 
-                    <a href="#" class="action-btn btn-finish-reading" onclick="finishReading({{ book.id }}); return false;">✅ Finish Reading</a>
                     {% endif %}
                 </td>
             </tr>
