@@ -32,7 +32,7 @@ final class DashboardController extends AbstractController
     {
         return $this->render('dashboard/index.html.twig', [
             'current_page' => 'logs',
-            'read_logs' => $readLogRepository->findAll(),
+            'read_logs' => $readLogRepository->findBy([], ['startDate' => 'ASC']),
         ]);
     }
 }
