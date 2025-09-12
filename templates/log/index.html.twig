@@ -17,7 +17,6 @@
     <table class="table modern-table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Book</th>
                 <th>Start Date</th>
                 <th>Finish Date</th>
@@ -30,7 +29,6 @@
         {% for reaLog in read_logs %}
             {% if reaLog is not null and reaLog is not empty %}
             <tr>
-                <td>{{ reaLog.id ?? '' }}</td>
                 <td>{{ reaLog.book.title ?? '' }}</td>
                 <td class="purchase-date">{{ reaLog.startDate ? reaLog.startDate|date('Y-m-d') : '' }}</td>
                 <td class="purchase-date">{{ reaLog.finishDate ? reaLog.finishDate|date('Y-m-d') : '' }}</td>

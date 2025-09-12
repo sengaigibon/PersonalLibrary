@@ -83,7 +83,7 @@
                 <th>Title</th>
                 <th>Author</th>
                 <th>Purchase Date</th>
-                <th>Readed?</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -107,10 +107,12 @@
                         {% endif %}
                     {% endfor %}
 
-                    {% if book.readLogs is not empty and hasFinishedReading %}
-                        <span class="read-status-icon read-yes">✅</span>
+                    {% if isCurrentlyReading %}
+                        <span class="status-reading">📖 Reading</span>
+                    {% elseif hasFinishedReading %}
+                        <span class="status-finished">✅ Finished</span>
                     {% else %}
-                        <span class="read-status-icon read-no">❌</span>
+                        <span class="status-unread">📚 Unread</span>
                     {% endif %}
                 </td>
                 <td>
