@@ -1,13 +1,34 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit ReadLog{% endblock %}
+{% block title %}Edit Reading Log{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/rr-styles.css') }}">
+{% endblock %}
 
 {% block body %}
-    <h1>Edit ReadLog</h1>
+<div class="edit-container">
+    <div class="edit-header">
+        <h1>✏️ Edit Reading Log</h1>
+        <a href="{{ path('app_dashboard_reading_log') }}" class="btn-base btn-back">← Back to Reading Log</a>
+    </div>
 
-    {{ include('log/_form.html.twig', {'button_label': 'Update'}) }}
+    <div class="form-card">
+        {{ include('log/_form.html.twig', {'button_label': 'Update Reading Log'}) }}
+    </div>
 
-    <a href="{{ path('app_dashboard_reading_log') }}">back to list</a>
+    <div class="actions-card">
+        <div class="info-section">
+            <p style="color: #7f8c8d; margin: 0; font-style: italic;">
+                💡 Update your reading progress and notes
+            </p>
+        </div>
 
-    {{ include('log/_delete_form.html.twig') }}
+        <div class="danger-zone">
+            <h3>⚠️ Danger Zone</h3>
+            {{ include('log/_delete_form.html.twig') }}
+        </div>
+    </div>
+</div>
 {% endblock %}

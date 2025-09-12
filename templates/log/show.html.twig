@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}ReadLog{% endblock %}
+{% block title %}Reading Log Details{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -8,36 +8,67 @@
 {% endblock %}
 
 {% block body %}
-    <h1>ReadLog</h1>
+<div class="show-container">
+    <div class="show-header">
+        <h1>��� Reading Log Details</h1>
+        <a href="{{ path('app_dashboard_reading_log') }}" class="btn-base btn-back">← Back to Reading Log</a>
+    </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ read_log.id }}</td>
-            </tr>
-            <tr>
-                <th>StartDate</th>
-                <td>{{ read_log.startDate ? read_log.startDate|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>FinishDate</th>
-                <td>{{ read_log.finishDate ? read_log.finishDate|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Rating</th>
-                <td>{{ read_log.rating }}</td>
-            </tr>
-            <tr>
-                <th>Notes</th>
-                <td>{{ read_log.notes }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="book-card">
+        <table class="book-details-table">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td><span class="book-id-badge">#{{ read_log.id }}</span></td>
+                </tr>
+                <tr>
+                    <th>Book</th>
+                    <td class="book-title">{{ read_log.book ? read_log.book.title : 'No book assigned' }}</td>
+                </tr>
+                <tr>
+                    <th>Start Date</th>
+                    <td class="purchase-date">{{ read_log.startDate ? read_log.startDate|date('F j, Y') : 'Not started' }}</td>
+                </tr>
+                <tr>
+                    <th>Finish Date</th>
+                    <td class="purchase-date">{{ read_log.finishDate ? read_log.finishDate|date('F j, Y') : 'Not finished' }}</td>
+                </tr>
+                <tr>
+                    <th>Rating</th>
+                    <td>
+                        {% if read_log.rating is not null and read_log.rating > 0 %}
+                            {% for i in 1..read_log.rating %}
+                                ⭐
+                            {% endfor %}
+                            <span class="pages-info">({{ read_log.rating }}/5)</span>
+                        {% else %}
+                            <span class="book-author">No rating</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Notes</th>
+                    <td class="book-author">{{ read_log.notes ?: 'No notes added' }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-    <a href="{{ path('app_dashboard_reading_log') }}">back to list</a>
+        <div class="action-buttons">
+            <a href="{{ path('app_read_log_edit', {'id': read_log.id}) }}" class="action-btn btn-edit-large">✏️ Edit Reading Log</a>
+        </div>
+    </div>
 
-    <a href="{{ path('app_read_log_edit', {'id': read_log.id}) }}">edit</a>
+    <div class="actions-card">
+        <div class="info-section">
+            <p style="color: #7f8c8d; margin: 0; font-style: italic;">
+                📚 Reading session details and progress tracking
+            </p>
+        </div>
 
-    {{ include('log/_delete_form.html.twig') }}
+        <div class="danger-zone">
+            <h3>⚠️ Danger Zone</h3>
+            {{ include('log/_delete_form.html.twig') }}
+        </div>
+    </div>
+</div>
 {% endblock %}
