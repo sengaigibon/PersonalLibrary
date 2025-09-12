@@ -7,6 +7,36 @@
     <link rel="stylesheet" href="{{ asset('styles/rr-styles.css') }}">
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function startReading(bookId, bookTitle) {
+            // TODO: Implement start reading functionality
+            console.log('Starting to read book:', bookId, bookTitle);
+            alert('Start reading: ' + bookTitle + ' (ID: ' + bookId + ')');
+
+            // Future implementation could include:
+            // - Create a new ReadLog entry with startDate = today
+            // - Update book status to "reading"
+            // - Show confirmation message
+            // - Refresh the page or update the UI
+        }
+
+        function finishReading(bookId, bookTitle) {
+            // TODO: Implement finish reading functionality
+            console.log('Finishing reading book:', bookId, bookTitle);
+            alert('Finish reading: ' + bookTitle + ' (ID: ' + bookId + ')');
+
+            // Future implementation could include:
+            // - Update existing ReadLog entry with finishDate = today
+            // - Prompt for rating and notes
+            // - Update book status to "completed"
+            // - Show confirmation message
+            // - Refresh the page or update the UI
+        }
+    </script>
+{% endblock %}
+
 {% block body %}
 <div class="books-container">
     <div class="books-header">
