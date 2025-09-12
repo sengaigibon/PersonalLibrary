@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\ReadLog;
 use App\Form\ReadLogType;
-use App\Repository\ReadLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
