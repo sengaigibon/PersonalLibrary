@@ -10,22 +10,54 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function startReading(bookId, bookTitle) {
-            // TODO: Implement start reading functionality
-            console.log('Starting to read book:', bookId, bookTitle);
-            alert('Start reading: ' + bookTitle + ' (ID: ' + bookId + ')');
+        function startReading(buttonElement) {
+            const bookId = buttonElement.getAttribute('data-path').split('/').pop();
+            const dataPath = buttonElement.getAttribute('data-path');
 
-            // Future implementation could include:
-            // - Create a new ReadLog entry with startDate = today
-            // - Update book status to "reading"
-            // - Show confirmation message
-            // - Refresh the page or update the UI
+            console.log('Starting to read book:', bookId);
+
+            // Make AJAX request to start reading endpoint
+            fetch(dataPath, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                return response.json().then(data => ({
+                    status: response.status,
+                    data: data
+                }));
+            })
+            .then(result => {
+                if (result.status === 200 && result.data.success) {
+                    // Success: Update button to "Reading now..." and disable it
+                    buttonElement.textContent = '📖 Reading now...';
+                    buttonElement.style.backgroundColor = '#95a5a6';
+                    buttonElement.style.cursor = 'not-allowed';
+                    buttonElement.style.pointerEvents = 'none';
+                    buttonElement.onclick = null;
+
+                    console.log('Successfully started reading bookId:', bookId);
+                } else if (result.status === 400 && result.data.error) {
+                    // Error: Show alert with error message
+                    alert('Error starting reading: ' + result.data.error);
+                } else {
+                    // Unexpected response
+                    alert('Unexpected response from server');
+                }
+            })
+            .catch(error => {
+                console.error('Error making request:', error);
+                alert('Network error occurred while starting reading');
+            });
         }
 
-        function finishReading(bookId, bookTitle) {
+        function finishReading(bookId) {
             // TODO: Implement finish reading functionality
-            console.log('Finishing reading book:', bookId, bookTitle);
-            alert('Finish reading: ' + bookTitle + ' (ID: ' + bookId + ')');
+            console.log('Finishing reading book:', bookId);
+            alert('Finish reading:  (ID: ' + bookId + ')');
 
             // Future implementation could include:
             // - Update existing ReadLog entry with finishDate = today
@@ -50,9 +82,8 @@
                 <th>ID</th>
                 <th>Title</th>
                 <th>Author</th>
-                <th>ISBN</th>
-                <th>Pages</th>
                 <th>Purchase Date</th>
+                <th>Readed?</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -63,22 +94,44 @@
                 <td>{{ book.id }}</td>
                 <td class="book-title">{{ book.title ?? '' }}</td>
                 <td class="book-author">{{ book.author ?? '' }}</td>
-                <td><span class="isbn-code">{{ book.isbn ?? '' }}</span></td>
-                <td>{{ book.pages ?? '' }}</td>
                 <td class="purchase-date">{{ book.purchaseDate ? book.purchaseDate|date('Y-m-d') : '' }}</td>
+                <td class="read-status">
+                    {% set hasFinishedReading = false %}
+                    {% set isCurrentlyReading = false %}
+
+                    {% for readLog in book.readLogs %}
+                        {% if readLog.startDate is not empty and readLog.finishDate is empty %}
+                            {% set isCurrentlyReading = true %}
+                        {% elseif readLog.finishDate is not empty %}
+                            {% set hasFinishedReading = true %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if book.readLogs is not empty and hasFinishedReading %}
+                        <span class="read-status-icon read-yes">✅</span>
+                    {% else %}
+                        <span class="read-status-icon read-no">❌</span>
+                    {% endif %}
+                </td>
                 <td>
                     {% if book.id is not null %}
                     <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
                     <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
-                    <a href="#" class="action-btn btn-start-reading" onclick="startReading({{ book.id }}, '{{ book.title|e('js') }}'); return false;">📖 Start Reading</a>
-                    <a href="#" class="action-btn btn-finish-reading" onclick="finishReading({{ book.id }}, '{{ book.title|e('js') }}'); return false;">✅ Finish Reading</a>
+
+                    {% if isCurrentlyReading %}
+                        <span class="action-btn btn-start-reading" style="background-color: #95a5a6; cursor: not-allowed; pointer-events: none;">📖 Reading now...</span>
+                    {% else %}
+                        <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="startReading(this); return false;">📖 Start Reading</a>
+                    {% endif %}
+
+                    <a href="#" class="action-btn btn-finish-reading" onclick="finishReading({{ book.id }}); return false;">✅ Finish Reading</a>
                     {% endif %}
                 </td>
             </tr>
             {% endif %}
         {% else %}
             <tr>
-                <td colspan="7" class="no-records">📖 No books found. Start building your library!</td>
+                <td colspan="6" class="no-records">📖 No books found. Start building your library!</td>
             </tr>
         {% endfor %}
         </tbody>
