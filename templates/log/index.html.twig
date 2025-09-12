@@ -48,6 +48,10 @@
                     {% if reaLog.id is not null %}
                     <a href="{{ path('app_read_log_show', {'id': reaLog.id}) }}" class="action-btn btn-show">👁 Show</a>
                     <a href="{{ path('app_read_log_edit', {'id': reaLog.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    <form method="post" action="{{ path('app_read_log_delete', {'id': reaLog.id}) }}" onsubmit="return confirm('Are you sure you want to delete this reading log entry?');" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reaLog.id) }}">
+                        <button type="submit" class="action-btn btn-delete-list">🗑️ Delete</button>
+                    </form>
                     {% endif %}
                 </td>
             </tr>
