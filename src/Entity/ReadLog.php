@@ -52,7 +52,7 @@ class ReadLog
         return $this->finishDate;
     }
 
-    public function setFinishDate(\DateTime $finishDate): static
+    public function setFinishDate(?\DateTime $finishDate): static
     {
         $this->finishDate = $finishDate;
 
