@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Book;
+use App\Entity\ReadLog;
 use App\Form\BookType;
+use App\Repository\ReadLogRepository;
 use App\Services\OpenLibraryApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -80,5 +82,42 @@ final class BookController extends AbstractController
         $result = $olAPI->getBookData($isbn);
 
         return $this->json($result);
+    }
+
+    #[Route('/start/{id}', name: 'app_book_start', methods: ['GET'])]
+    public function startReading(Book $book, EntityManagerInterface $entityManager): Response
+    {
+        try {
+            $readLog = new ReadLog();
+            $readLog->setStartDate(new \DateTime());
+            $readLog->setBook($book);
+            $entityManager->persist($readLog);
+            $entityManager->flush();
+        } catch (\Exception $exception) {
+            return $this->json(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json(['success' => true], Response::HTTP_OK);
+    }
+
+    #[Route('/finish/{id}', name: 'app_book_finish', methods: ['GET'])]
+    public function finishReading(Book $book, EntityManagerInterface $entityManager, ReadLogRepository $logRepository): Response
+    {
+        try {
+            $logs = $book->getReadLogs();
+            if ($logs->isEmpty()) {
+                $log = new ReadLog();
+            } else {
+                $log = $logs->first();
+            }
+
+            $log->setFinishDate(new \DateTime());
+            $entityManager->persist($log);
+            $entityManager->flush();
+        } catch (\Exception $exception) {
+            return $this->json(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json(['success' => true], Response::HTTP_OK);
     }
 }
