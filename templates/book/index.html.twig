@@ -78,7 +78,7 @@
                 <th>ID</th>
                 <th>Title</th>
                 <th>Author</th>
-                <th>Purchase Date</th>
+                <th>Pages</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -90,7 +90,7 @@
                 <td>{{ book.id }}</td>
                 <td class="book-title">{{ book.title ?? '' }}</td>
                 <td class="book-author">{{ book.author ?? '' }}</td>
-                <td class="purchase-date">{{ book.purchaseDate ? book.purchaseDate|date('Y-m-d') : '' }}</td>
+                <td class="pages">{{ book.pages ?? '?' }}</td>
                 <td class="read-status">
                     {% set hasFinishedReading = false %}
                     {% set isCurrentlyReading = false %}
