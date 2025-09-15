@@ -2,6 +2,16 @@
 
 {% block title %}Dashboard - RR: The Reading Record{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/common.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('scripts/flash-messages.js') }}"></script>
+{% endblock %}
+
 {% block body %}
 <style>
     .dashboard-container {
@@ -86,6 +96,17 @@
 
     <!-- Content Area -->
     <div class="content-area">
+        <!-- Flash Messages -->
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : type }} alert-dismissible fade show auto-fade" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <script src="{{ asset('scripts/flash-messages.js') }}"></script>
+
         {% if currentPage == 'dashboard' %}
             {% include 'dashboard/dashboard.html.twig' %}
         {% elseif currentPage == 'books' %}
