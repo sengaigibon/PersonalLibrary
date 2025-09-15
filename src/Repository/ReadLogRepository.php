@@ -18,16 +18,22 @@ class ReadLogRepository extends ServiceEntityRepository
 
     public function findByYear(int $year)
     {
-        $initialDate = "$year-01-01";
-        $endDate = "$year-12-31";
-        $query = $this->createQueryBuilder('r')
+        return $this->createQueryBuilder('r')
             ->where('r.finishDate >= :initialDate AND r.finishDate <= :endDate')
-            ->setParameter('initialDate', $initialDate)
-            ->setParameter('endDate', $endDate)
-            ->getQuery();
-
-        return $query->getResult();
+            ->setParameter('initialDate', "$year-01-01")
+            ->setParameter('endDate', "$year-12-31")
+            ->orderBy('r.finishDate', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
+
+    public function findUnfinished()
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.finishDate is null')
+            ->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return ReadLog[] Returns an array of ReadLog objects
     //     */
