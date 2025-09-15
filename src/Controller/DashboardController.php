@@ -12,13 +12,16 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(ReadLogRepository $readLogRepository): Response
+    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository): Response
     {
-        $thisYear = (new \DateTime())->format('Y');
+        $thisYear = new \DateTime()->format('Y');
         $logs = $readLogRepository->findByYear($thisYear);
         $books = [];
         $readingTime = 0;
         $pages = 0;
+
+        $librarySize = $bookRepository->count();
+        $totalLogs = $readLogRepository->count();
 
 
         /** @var ReadLog $log */
@@ -38,6 +41,9 @@ final class DashboardController extends AbstractController
             'avgDays' => $readingSpeed,
             'booksCount' => count($books),
             'pages' => $pages,
+            'librarySize' => $librarySize,
+            'totalLogs' => $totalLogs,
+            'totalReadPercentage' => $totalLogs * 100 / $librarySize,
         ]);
     }
 
