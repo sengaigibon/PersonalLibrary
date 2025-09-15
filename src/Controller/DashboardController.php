@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ReadLog;
 use App\Repository\BookRepository;
 use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,12 +12,32 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(): Response
+    public function index(ReadLogRepository $readLogRepository): Response
     {
         $thisYear = (new \DateTime())->format('Y');
+        $logs = $readLogRepository->findByYear($thisYear);
+        $books = [];
+        $readingTime = 0;
+        $pages = 0;
+
+
+        /** @var ReadLog $log */
+        foreach ($logs as $log) {
+            $book = $log->getBook();
+            $books[] = $book->getTitle();
+            $readingTime += date_diff($log->getStartDate(), $log->getFinishDate())->days;
+            $pages += $book->getPages() ?? 0;
+        }
+
+        $readingSpeed = $readingTime / count($logs);
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
             'thisYear' => $thisYear,
+            'booksList' => $books,
+            'avgDays' => $readingSpeed,
+            'booksCount' => count($books),
+            'pages' => $pages,
         ]);
     }
 
@@ -25,7 +46,7 @@ final class DashboardController extends AbstractController
     {
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'books',
-            'books' => $bookRepository->findAll(),
+            'books' => $bookRepository->findBy([], ['id' => 'ASC']),
         ]);
     }
 

@@ -9,8 +9,16 @@
 <div class="dashboard-content">
     <div class="dashboard-card">
         <h3>Books read this year ({{ thisYear }})</h3>
+        <ul>
+        {% for bookName in booksList %}
+            <li>{{ bookName }}</li>
+        {% endfor %}
+        </ul>
     </div>
     <div class="dashboard-card">
-        <h3>Reading speed this year ({{ thisYear }})</h3>
+        <h3>Statistics for {{ thisYear }}</h3>
+        You read {{ booksCount }} books; <br>
+        At an average reading speed of {{ avgDays }} days per book; <br>
+        Meaning {{ pages }} pages in total; <br>
     </div>
 </div>

@@ -16,6 +16,18 @@ class ReadLogRepository extends ServiceEntityRepository
         parent::__construct($registry, ReadLog::class);
     }
 
+    public function findByYear(int $year)
+    {
+        $initialDate = "$year-01-01";
+        $endDate = "$year-12-31";
+        $query = $this->createQueryBuilder('r')
+            ->where('r.finishDate >= :initialDate AND r.finishDate <= :endDate')
+            ->setParameter('initialDate', $initialDate)
+            ->setParameter('endDate', $endDate)
+            ->getQuery();
+
+        return $query->getResult();
+    }
     //    /**
     //     * @return ReadLog[] Returns an array of ReadLog objects
     //     */
