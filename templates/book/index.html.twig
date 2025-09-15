@@ -133,5 +133,11 @@
         {% endfor %}
         </tbody>
     </table>
+
+    {{ include('components/pagination.html.twig', {
+        'route_name': 'app_dashboard_books',
+        'route_params': {},
+        'item_name': 'books'
+    }) }}
 </div>
 {% endblock %}
