@@ -254,6 +254,24 @@
     color: #2c3e50;
 }
 
+/* Table column width controls */
+.modern-table th:nth-child(2), /* Title column header */
+.modern-table td:nth-child(2) { /* Title column data */
+    max-width: 350px;
+    width: 350px;
+}
+
+.modern-table .book-title {
+    font-weight: 600;
+    color: #2c3e50;
+    /* Text overflow handling */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    display: block;
+}
+
 /* Book Details Table */
 .book-details-table {
     width: 100%;
