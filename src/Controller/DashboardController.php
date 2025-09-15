@@ -16,9 +16,11 @@ final class DashboardController extends AbstractController
     {
         $thisYear = new \DateTime()->format('Y');
         $logs = $readLogRepository->findByYear($thisYear);
+        $unfinished = $readLogRepository->findUnfinished() ?: [];
         $books = [];
         $readingTime = 0;
         $pages = 0;
+        $readingNowList = [];
 
         $librarySize = $bookRepository->count();
         $totalLogs = $readLogRepository->count();
@@ -32,6 +34,10 @@ final class DashboardController extends AbstractController
             $pages += $book->getPages() ?? 0;
         }
 
+        array_walk($unfinished, function (ReadLog $logItem) use (&$readingNowList) {
+            $readingNowList[] = $logItem->getBook()->getTitle();
+        });
+
         $readingSpeed = round($readingTime / count($logs), 2);
 
         return $this->render('dashboard/index.html.twig', [
@@ -44,6 +50,7 @@ final class DashboardController extends AbstractController
             'librarySize' => $librarySize,
             'totalLogs' => $totalLogs,
             'totalReadPercentage' => round($totalLogs * 100 / $librarySize, 2),
+            'redingNowList' => $readingNowList
         ]);
     }
 

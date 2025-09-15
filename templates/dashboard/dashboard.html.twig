@@ -1,5 +1,5 @@
 {% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('styles/rr-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
 {% endblock %}
 
 <div class="content-header">
@@ -7,7 +7,18 @@
 </div>
 
 <div class="dashboard-content">
-    <div class="dashboard-card">
+    <div class="dashboard-card card-reading">
+        <h3>Reading now:</h3>
+        <ul>
+            {% for bookName in redingNowList %}
+                <li>{{ bookName }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="dashboard-content" style="margin-top: 20px">
+    <div class="dashboard-card card-finished">
         <h3>Books read this year ({{ thisYear }})</h3>
         <ul>
         {% for bookName in booksList %}
@@ -18,8 +29,8 @@
     <div class="dashboard-card">
         <h3>Statistics for {{ thisYear }}</h3>
         You have read <span class="highlight-stat">{{ booksCount }} books</span>; <br>
-        At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
         Meaning <span class="highlight-stat">{{ pages }} pages</span> in total; <br>
+        At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
     </div>
 </div>
 
