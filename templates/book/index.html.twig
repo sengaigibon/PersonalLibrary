@@ -10,13 +10,19 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function startReading(buttonElement) {
-            const bookId = buttonElement.getAttribute('data-path').split('/').pop();
+        function updateStatus(bookId, buttonElement, status) {
             const dataPath = buttonElement.getAttribute('data-path');
+            let text, statusMessage;
+            switch (status) {
+                case 'reading':
+                    text = '📖 Reading now...';
+                    statusMessage = '📖 Reading';
+                    break;
+                case 'finished':
+                    text = statusMessage = '✅ Finished';
+                    break;
+            }
 
-            console.log('Starting to read book:', bookId);
-
-            // Make AJAX request to start reading endpoint
             fetch(dataPath, {
                 method: 'GET',
                 headers: {
@@ -24,56 +30,37 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => {
-                return response.json().then(data => ({
-                    status: response.status,
-                    data: data
-                }));
-            })
-            .then(result => {
-                if (result.status === 200 && result.data.success) {
-                    // Success: Update button to "Reading now..." and disable it
-                    buttonElement.textContent = '📖 Reading now...';
-                    buttonElement.style.backgroundColor = '#95a5a6';
-                    buttonElement.style.cursor = 'not-allowed';
-                    buttonElement.style.pointerEvents = 'none';
-                    buttonElement.onclick = null;
+                .then(response => {
+                    return response.json().then(data => ({
+                        status: response.status,
+                        data: data
+                    }));
+                })
+                .then(function(result) {
+                    if (result.status === 200 && result.data.success) {
+                        buttonElement.textContent = text;
+                        buttonElement.style.backgroundColor = '#95a5a6';
+                        buttonElement.style.cursor = 'not-allowed';
+                        buttonElement.style.pointerEvents = 'none';
+                        buttonElement.onclick = null;
 
-                    // Update the "Status" column to show reading status
-                    const row = document.getElementById('tr-book-' + bookId);
-                    if (row) {
-                        const statusCell = row.querySelector('.read-status');
-                        if (statusCell) {
-                            statusCell.innerHTML = '<span class="status-reading">📖 Reading</span>';
+                        const row = document.getElementById('tr-book-' + bookId);
+                        if (row) {
+                            const statusCell = row.querySelector('.read-status');
+                            if (statusCell) {
+                                statusCell.innerHTML = `<span class="status-${status}">${statusMessage}</span>`;
+                            }
                         }
+                    } else if (result.status === 400 && result.data.error) {
+                        alert('Error: ' + result.data.error);
+                    } else {
+                        alert('Unexpected response from server');
                     }
-
-                    console.log('Successfully started reading bookId:', bookId);
-                } else if (result.status === 400 && result.data.error) {
-                    // Error: Show alert with error message
-                    alert('Error starting reading: ' + result.data.error);
-                } else {
-                    // Unexpected response
-                    alert('Unexpected response from server');
-                }
-            })
-            .catch(error => {
-                console.error('Error making request:', error);
-                alert('Network error occurred while starting reading');
-            });
-        }
-
-        function finishReading(bookId) {
-            // TODO: Implement finish reading functionality
-            console.log('Finishing reading book:', bookId);
-            alert('Finish reading:  (ID: ' + bookId + ')');
-
-            // Future implementation could include:
-            // - Update existing ReadLog entry with finishDate = today
-            // - Prompt for rating and notes
-            // - Update book status to "completed"
-            // - Show confirmation message
-            // - Refresh the page or update the UI
+                })
+                .catch(error => {
+                    console.error('Error making request:', error);
+                    alert('Network error occurred');
+                });
         }
     </script>
 {% endblock %}
@@ -130,9 +117,9 @@
                     <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
 
                     {% if isCurrentlyReading %}
-                        <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="finishReading({{ book.id }}); return false;">✅ Finish Reading</a>
+                        <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish Reading</a>
                     {% else %}
-                        <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="startReading(this); return false;">📖 Start Reading</a>
+                        <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'reading'); return false;">📖 Start Reading</a>
                     {% endif %}
 
                     {% endif %}
