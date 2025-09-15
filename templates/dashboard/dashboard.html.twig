@@ -17,19 +17,19 @@
     </div>
     <div class="dashboard-card">
         <h3>Statistics for {{ thisYear }}</h3>
-        You have read {{ booksCount }} books; <br>
-        At an average reading speed of {{ avgDays }} days per book; <br>
-        Meaning {{ pages }} pages in total; <br>
+        You have read <span class="highlight-stat">{{ booksCount }} books</span>; <br>
+        At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
+        Meaning <span class="highlight-stat">{{ pages }} pages</span> in total; <br>
     </div>
 </div>
 
 <div class="dashboard-content" style="margin-top: 20px">
     <div class="dashboard-card">
-        <h3>Summary</h3>
+        <h3>Total Statistics</h3>
         <ul>
-            <li>Your library has a total of {{ librarySize }} books </li>
-            <li>You have read {{ totalLogs }} books </li>
-            <li>Which represent {{ totalReadPercentage }}% of the total </li>
+            <li>Your library has a total of <span class="highlight-stat">{{ librarySize }}</span> books </li>
+            <li>You have read <span class="highlight-stat">{{ totalLogs }}</span> books of your library</li>
+            <li>Which represent <span class="highlight-stat">{{ totalReadPercentage }}%</span> of the total </li>
         </ul>
     </div>
 </div>
