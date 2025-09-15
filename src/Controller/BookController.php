@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Entity\ReadLog;
 use App\Form\BookType;
-use App\Repository\ReadLogRepository;
+use App\Repository\BookRepository;
 use App\Services\OpenLibraryApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,16 +17,22 @@ use Symfony\Component\Routing\Attribute\Route;
 final class BookController extends AbstractController
 {
     #[Route('/new', name: 'app_book_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, BookRepository $bookRepository): Response
     {
         $book = new Book();
         $form = $this->createForm(BookType::class, $book);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $bookExists = !empty($bookRepository->findBy(['title' => $book->getTitle()]));
+            if ($bookExists) {
+                $this->addFlash('error', 'Book already exists!!');
+                return $this->redirectToRoute('app_book_new', [], Response::HTTP_SEE_OTHER);
+            }
             $entityManager->persist($book);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Book created successfully!');
             return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -101,7 +107,7 @@ final class BookController extends AbstractController
     }
 
     #[Route('/finish/{id}', name: 'app_book_finish', methods: ['GET'])]
-    public function finishReading(Book $book, EntityManagerInterface $entityManager, ReadLogRepository $logRepository): Response
+    public function finishReading(Book $book, EntityManagerInterface $entityManager): Response
     {
         try {
             $logs = $book->getReadLogs();
