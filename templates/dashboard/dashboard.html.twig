@@ -7,7 +7,7 @@
 </div>
 
 <div class="dashboard-content">
-    <div class="dashboard-card">
+    <div class="dashboard-card card-reading">
         <h3>Reading now:</h3>
         <ul>
             {% for bookName in redingNowList %}
@@ -18,7 +18,7 @@
 </div>
 
 <div class="dashboard-content" style="margin-top: 20px">
-    <div class="dashboard-card">
+    <div class="dashboard-card card-finished">
         <h3>Books read this year ({{ thisYear }})</h3>
         <ul>
         {% for bookName in booksList %}
