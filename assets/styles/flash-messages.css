@@ -1,0 +1,46 @@
+/* Flash Messages / Alert Styles */
+.alert {
+    padding: 15px 20px;
+    margin: 15px auto;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border-left: 4px solid #229954;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border-left: 4px solid #a93226;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border-left: 4px solid #d68910;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border-left: 4px solid #2471a3;
+}
+
+.alert::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px 0 0 4px;
+}

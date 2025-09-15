@@ -61,6 +61,7 @@ final class BookController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash('success', 'Book saved successfully!');
             return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -79,6 +80,7 @@ final class BookController extends AbstractController
             $entityManager->flush();
         }
 
+        $this->addFlash('success', 'Book deleted successfully!');
         return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
     }
 
