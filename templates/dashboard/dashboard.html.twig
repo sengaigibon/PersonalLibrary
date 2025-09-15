@@ -1,21 +1,16 @@
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/rr-styles.css') }}">
+{% endblock %}
+
 <div class="content-header">
     <h1>Dashboard</h1>
 </div>
 
 <div class="dashboard-content">
-    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h2 style="color: #2c3e50; margin-bottom: 20px;">Welcome to Your Reading Dashboard</h2>
-        <p style="color: #7f8c8d; font-size: 16px; line-height: 1.6;">
-            This is your main dashboard where you can track your reading progress and manage your book collection.
-        </p>
-
-        <div style="margin-top: 30px; padding: 20px; background: #ecf0f1; border-radius: 6px;">
-            <h3 style="color: #2c3e50; margin-bottom: 15px;">Quick Stats</h3>
-            <p style="color: #7f8c8d; margin: 0;">
-                📚 Total Books: Coming soon...<br>
-                📖 Currently Reading: Coming soon...<br>
-                ✅ Books Completed: Coming soon...
-            </p>
-        </div>
+    <div class="dashboard-card">
+        <h3>Books read this year ({{ thisYear }})</h3>
+    </div>
+    <div class="dashboard-card">
+        <h3>Reading speed this year ({{ thisYear }})</h3>
     </div>
 </div>
