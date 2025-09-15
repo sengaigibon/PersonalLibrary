@@ -1,0 +1,73 @@
+{% if pagination is defined and pagination.total_pages > 1 %}
+<div class="pagination-container">
+    <!-- Pagination Info -->
+    <div class="pagination-info">
+        <span>Showing {{ pagination.start_item }} to {{ pagination.end_item }} of {{ pagination.total_items }} {{ item_name|default('items') }}</span>
+    </div>
+
+    <!-- Items per page selector -->
+    <div class="pagination-limit">
+        <label for="limit-select">Items per page:</label>
+        <select id="limit-select" onchange="changePagination(this.value, '{{ route_name }}')">
+            <option value="10" {{ pagination.items_per_page == 10 ? 'selected' : '' }}>10</option>
+            <option value="20" {{ pagination.items_per_page == 20 ? 'selected' : '' }}>20</option>
+            <option value="50" {{ pagination.items_per_page == 50 ? 'selected' : '' }}>50</option>
+            <option value="100" {{ pagination.items_per_page == 100 ? 'selected' : '' }}>100</option>
+        </select>
+    </div>
+
+    <!-- Pagination Navigation -->
+    <div class="pagination-nav">
+        {% if pagination.has_prev %}
+            <a href="{{ path(route_name, route_params|default({})|merge({page: 1, limit: pagination.items_per_page})) }}" class="pagination-btn pagination-first">« First</a>
+            <a href="{{ path(route_name, route_params|default({})|merge({page: pagination.current_page - 1, limit: pagination.items_per_page})) }}" class="pagination-btn pagination-prev">‹ Previous</a>
+        {% else %}
+            <span class="pagination-btn pagination-disabled">« First</span>
+            <span class="pagination-btn pagination-disabled">‹ Previous</span>
+        {% endif %}
+
+        {% set start_page = max(1, pagination.current_page - 2) %}
+        {% set end_page = min(pagination.total_pages, pagination.current_page + 2) %}
+
+        {% if start_page > 1 %}
+            <a href="{{ path(route_name, route_params|default({})|merge({page: 1, limit: pagination.items_per_page})) }}" class="pagination-btn">1</a>
+            {% if start_page > 2 %}
+                <span class="pagination-ellipsis">...</span>
+            {% endif %}
+        {% endif %}
+
+        {% for page in start_page..end_page %}
+            {% if page == pagination.current_page %}
+                <span class="pagination-btn pagination-current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path(route_name, route_params|default({})|merge({page: page, limit: pagination.items_per_page})) }}" class="pagination-btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if end_page < pagination.total_pages %}
+            {% if end_page < pagination.total_pages - 1 %}
+                <span class="pagination-ellipsis">...</span>
+            {% endif %}
+            <a href="{{ path(route_name, route_params|default({})|merge({page: pagination.total_pages, limit: pagination.items_per_page})) }}" class="pagination-btn">{{ pagination.total_pages }}</a>
+        {% endif %}
+
+        {% if pagination.has_next %}
+            <a href="{{ path(route_name, route_params|default({})|merge({page: pagination.current_page + 1, limit: pagination.items_per_page})) }}" class="pagination-btn pagination-next">Next ›</a>
+            <a href="{{ path(route_name, route_params|default({})|merge({page: pagination.total_pages, limit: pagination.items_per_page})) }}" class="pagination-btn pagination-last">Last »</a>
+        {% else %}
+            <span class="pagination-btn pagination-disabled">Next ›</span>
+            <span class="pagination-btn pagination-disabled">Last »</span>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function changePagination(newLimit, routeName) {
+    const currentPage = {{ pagination.current_page ?? 1 }};
+    const url = new URL(window.location);
+    url.searchParams.set('limit', newLimit);
+    url.searchParams.set('page', 1); // Reset to first page when changing limit
+    window.location.href = url.toString();
+}
+</script>
+{% endif %}

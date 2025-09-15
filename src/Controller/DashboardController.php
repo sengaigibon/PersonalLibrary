@@ -6,6 +6,7 @@ use App\Entity\ReadLog;
 use App\Repository\BookRepository;
 use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -55,11 +56,39 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/books', name: 'app_dashboard_books')]
-    public function books(BookRepository $bookRepository): Response
+    public function books(BookRepository $bookRepository, Request $request): Response
     {
+        // Get pagination parameters
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, min(100, $request->query->getInt('limit', 20))); // Default 20, max 100
+
+        // Calculate offset
+        $offset = ($page - 1) * $limit;
+
+        // Get total count
+        $totalBooks = $bookRepository->count([]);
+
+        // Calculate pagination info
+        $totalPages = (int) ceil($totalBooks / $limit);
+        $hasNext = $page < $totalPages;
+        $hasPrev = $page > 1;
+
+        // Get books for current page
+        $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'books',
-            'books' => $bookRepository->findBy([], ['id' => 'ASC']),
+            'books' => $books,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_items' => $totalBooks,
+                'items_per_page' => $limit,
+                'has_next' => $hasNext,
+                'has_prev' => $hasPrev,
+                'start_item' => $offset + 1,
+                'end_item' => min($offset + $limit, $totalBooks)
+            ]
         ]);
     }
 
