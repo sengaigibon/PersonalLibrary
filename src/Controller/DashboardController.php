@@ -13,8 +13,10 @@ final class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(): Response
     {
+        $thisYear = (new \DateTime())->format('Y');
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'dashboard',
+            'currentPage' => 'dashboard',
+            'thisYear' => $thisYear,
         ]);
     }
 
@@ -22,7 +24,7 @@ final class DashboardController extends AbstractController
     public function books(BookRepository $bookRepository): Response
     {
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'books',
+            'currentPage' => 'books',
             'books' => $bookRepository->findAll(),
         ]);
     }
@@ -31,8 +33,8 @@ final class DashboardController extends AbstractController
     public function readingLog(ReadLogRepository $readLogRepository): Response
     {
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'logs',
-            'read_logs' => $readLogRepository->findBy([], ['startDate' => 'ASC']),
+            'currentPage' => 'logs',
+            'readLogs' => $readLogRepository->findBy([], ['startDate' => 'ASC']),
         ]);
     }
 }

@@ -71,39 +71,39 @@
     <div class="sidebar">
         <h3>RR Menu</h3>
 
-        <a href="{{ path('app_dashboard') }}" class="menu-item {% if current_page == 'dashboard' %}active{% endif %}">
+        <a href="{{ path('app_dashboard') }}" class="menu-item {% if currentPage == 'dashboard' %}active{% endif %}">
             📊 Dashboard
         </a>
 
-        <a href="{{ path('app_dashboard_books') }}" class="menu-item {% if current_page == 'books' %}active{% endif %}">
+        <a href="{{ path('app_dashboard_books') }}" class="menu-item {% if currentPage == 'books' %}active{% endif %}">
             📚 Books
         </a>
 
-        <a href="{{ path('app_dashboard_reading_log') }}" class="menu-item {% if current_page == 'reading_log' %}active{% endif %}">
+        <a href="{{ path('app_dashboard_reading_log') }}" class="menu-item {% if currentPage == 'reading_log' %}active{% endif %}">
             📖 Reading Log
         </a>
     </div>
 
     <!-- Content Area -->
     <div class="content-area">
-        {% if current_page == 'dashboard' %}
+        {% if currentPage == 'dashboard' %}
             {% include 'dashboard/dashboard.html.twig' %}
-        {% elseif current_page == 'books' %}
+        {% elseif currentPage == 'books' %}
             {% include 'book/index.html.twig' %}
-        {% elseif current_page == 'new-book' %}
+        {% elseif currentPage == 'new-book' %}
             {% include 'book/new.html.twig' %}
-        {% elseif current_page == 'show-book' %}
+        {% elseif currentPage == 'show-book' %}
             {% include 'book/show.html.twig' %}
-        {% elseif current_page == 'edit-book' %}
+        {% elseif currentPage == 'edit-book' %}
             {% include 'book/edit.html.twig' %}
 
-        {% elseif current_page == 'logs' %}
+        {% elseif currentPage == 'logs' %}
             {% include 'log/index.html.twig' %}
-        {% elseif current_page == 'new-log' %}
+        {% elseif currentPage == 'new-log' %}
             {% include 'log/new.html.twig' %}
-        {% elseif current_page == 'show-log' %}
+        {% elseif currentPage == 'show-log' %}
             {% include 'log/show.html.twig' %}
-        {% elseif current_page == 'edit-log' %}
+        {% elseif currentPage == 'edit-log' %}
             {% include 'log/edit.html.twig' %}
 
         {% endif %}

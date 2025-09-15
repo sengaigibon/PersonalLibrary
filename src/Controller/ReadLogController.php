@@ -28,7 +28,7 @@ final class ReadLogController extends AbstractController
         }
 
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'new-log',
+            'currentPage' => 'new-log',
             'read_log' => $readLog,
             'form' => $form,
         ]);
@@ -38,7 +38,7 @@ final class ReadLogController extends AbstractController
     public function show(ReadLog $readLog): Response
     {
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'show-log',
+            'currentPage' => 'show-log',
             'read_log' => $readLog,
         ]);
     }
@@ -56,7 +56,7 @@ final class ReadLogController extends AbstractController
         }
 
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'edit-log',
+            'currentPage' => 'edit-log',
             'read_log' => $readLog,
             'form' => $form,
         ]);

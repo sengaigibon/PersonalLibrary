@@ -31,7 +31,7 @@ final class BookController extends AbstractController
         }
 
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'new-book',
+            'currentPage' => 'new-book',
             'book' => $book,
             'form' => $form,
         ]);
@@ -41,7 +41,7 @@ final class BookController extends AbstractController
     public function show(Book $book): Response
     {
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'show-book',
+            'currentPage' => 'show-book',
             'book' => $book,
         ]);
     }
@@ -59,7 +59,7 @@ final class BookController extends AbstractController
         }
 
         return $this->render('dashboard/index.html.twig', [
-            'current_page' => 'edit-book',
+            'currentPage' => 'edit-book',
             'book' => $book,
             'form' => $form,
         ]);
