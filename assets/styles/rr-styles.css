@@ -199,6 +199,10 @@
     margin-bottom: 20px;
 }
 
+.form-card > form {
+    margin-right: 30px;
+}
+
 .actions-card {
     background: white;
     border-radius: 12px;

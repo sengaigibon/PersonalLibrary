@@ -21,6 +21,8 @@ class ReadLogType extends AbstractType
             ->add('book', EntityType::class, [
                 'class' => Book::class,
                 'choice_label' => 'title',
+                'placeholder' => 'Choose a book',
+                'required' => true,
             ])
         ;
     }

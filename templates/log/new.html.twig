@@ -5,6 +5,29 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/rr-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/choices.min.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('scripts/choices.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const booksSelect = document.querySelector('#read_log_book');
+
+            const choices = new Choices(booksSelect, {
+                searchEnabled: true,
+                searchPlaceholderValue: 'Search',
+                itemSelectText: '',
+                noResultsText: 'No books found',
+                noChoicesText: 'No books available',
+                classNames: {
+                    containerInner: ['form-control']
+                }
+                // shouldSort: false
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block body %}
