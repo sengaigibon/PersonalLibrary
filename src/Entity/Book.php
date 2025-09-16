@@ -31,6 +31,9 @@ class Book
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $purchaseDate = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: false)]
+    private bool $isReference = false;
+
     /**
      * @var Collection<int, ReadLog>
      */
@@ -135,5 +138,15 @@ class Book
         }
 
         return $this;
+    }
+
+    public function isReference(): bool
+    {
+        return $this->isReference;
+    }
+
+    public function setIsReference(bool $isReference): void
+    {
+        $this->isReference = $isReference;
     }
 }

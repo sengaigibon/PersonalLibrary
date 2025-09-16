@@ -33,6 +33,10 @@
                     <td class="pages-info">{{ book.pages }} pages</td>
                 </tr>
                 <tr>
+                    <th>This is a reference book</th>
+                    <td class="pages-reference">{{ book.isReference ? 'Yes' : 'No' }} </td>
+                </tr>
+                <tr>
                     <th>Purchase Date</th>
                     <td class="purchase-date">{{ book.purchaseDate ? book.purchaseDate|date('F j, Y') : 'Not specified' }}</td>
                 </tr>

@@ -24,6 +24,12 @@
     </div>
 
     <div class="form-group">
+        {{ form_label(form.isReference) }}
+        {{ form_widget(form.isReference, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.isReference) }}
+    </div>
+
+    <div class="form-group">
         {{ form_label(form.purchaseDate) }}
         {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.purchaseDate) }}
