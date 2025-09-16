@@ -39,7 +39,8 @@ final class DashboardController extends AbstractController
             $readingNowList[] = $logItem->getBook()->getTitle();
         });
 
-        $readingSpeed = round($readingTime / count($logs), 2);
+        $readingSpeed = $logs ? round($readingTime / count($logs), 2) : 0;
+        $totalReadPercentage = $librarySize ? round($totalLogs * 100 / $librarySize, 2) : 0;
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
@@ -50,7 +51,7 @@ final class DashboardController extends AbstractController
             'pages' => $pages,
             'librarySize' => $librarySize,
             'totalLogs' => $totalLogs,
-            'totalReadPercentage' => round($totalLogs * 100 / $librarySize, 2),
+            'totalReadPercentage' => $totalReadPercentage,
             'redingNowList' => $readingNowList
         ]);
     }
