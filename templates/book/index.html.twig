@@ -64,7 +64,7 @@
 <div class="books-container">
     <div class="books-header">
         <h1>📚 Library</h1>
-        <a href="{{ path('app_book_new') }}" class="btn-base btn-new">+ Add New Book</a>
+        <a href="{{ path('app_book_new', {page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}" class="btn-base btn-new">+ Add New Book</a>
     </div>
 
     <table class="table modern-table">
@@ -109,7 +109,7 @@
                 <td>
                     {% if book.id is not null %}
                     <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
-                    <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    <a href="{{ path('app_book_edit', {'id': book.id, page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}" class="action-btn btn-edit">✏️ Edit</a>
 
                     {% if isCurrentlyReading %}
                         <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish Reading</a>
@@ -129,6 +129,7 @@
         </tbody>
     </table>
 
+    <!-- Pagination Controls -->
     {{ include('components/pagination.html.twig', {
         'route_name': 'app_dashboard_books',
         'route_params': {},

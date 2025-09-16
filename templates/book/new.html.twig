@@ -6,7 +6,7 @@
 <div class="form-container">
     <div class="form-header">
         <h1>📚 Create New Book</h1>
-        <a href="{{ path('app_dashboard_books') }}" class="btn-base btn-back">← Back to Library</a>
+        <a href="{{ path('app_dashboard_books', pagination_params|default({})) }}" class="btn-base btn-back">← Back to Library</a>
     </div>
 
     <div class="form-card">
