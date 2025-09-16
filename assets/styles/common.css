@@ -25,6 +25,19 @@
     border-bottom: 2px solid #e9ecef;
 }
 
+/* Sticky Header for Books Page */
+.books-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #f8f9fa;
+    padding: 20px 10px 15px 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e9ecef;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
 .book-header h1,
 .books-header h1,
 .form-header h1,
