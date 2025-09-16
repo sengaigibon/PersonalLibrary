@@ -134,9 +134,9 @@
                     <a href="{{ path('app_book_edit', {'id': book.id, page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}" class="action-btn btn-edit">✏️ Edit</a>
 
                     {% if isCurrentlyReading %}
-                        <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish Reading</a>
+                        <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish</a>
                     {% else %}
-                        <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'reading'); return false;">📖 Start Reading</a>
+                        <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'reading'); return false;">📖 Start</a>
                     {% endif %}
 
                     {% endif %}
