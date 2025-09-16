@@ -143,6 +143,31 @@
     transform: translateY(-1px);
 }
 
+/* New Action Buttons Styles */
+.action-btn.btn-start-reading {
+    background-color: #3498db;
+    color: white;
+}
+
+.action-btn.btn-start-reading:hover {
+    background-color: #2980b9;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.action-btn.btn-finish-reading {
+    background-color: #27ae60;
+    color: white;
+}
+
+.action-btn.btn-finish-reading:hover {
+    background-color: #229954;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
 .action-btn.btn-edit-large {
     background: linear-gradient(135deg, #f39c12, #e67e22);
     padding: 12px 24px;
