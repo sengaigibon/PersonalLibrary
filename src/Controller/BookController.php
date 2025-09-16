@@ -95,7 +95,7 @@ final class BookController extends AbstractController
     }
 
     #[Route('/query/{isbn}', name: 'app_book_query', methods: ['GET'])]
-    public function query(Request $request, string $isbn, OpenLibraryApi $olAPI): Response
+    public function query(string $isbn, OpenLibraryApi $olAPI): Response
     {
         $result = $olAPI->getBookData($isbn);
 

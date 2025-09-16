@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Book;
 use App\Entity\ReadLog;
 use App\Form\ReadLogType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,6 +33,65 @@ final class ReadLogController extends AbstractController
             'read_log' => $readLog,
             'form' => $form,
         ]);
+    }
+
+    #[Route('/quicknew/{id}', name: 'app_read_log_quicknew', methods: ['POST'])]
+    public function quickNew(Book $book, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $readLog = new ReadLog();
+        $content = json_decode($request->getContent() ?? '', true);
+
+        if (empty($content)) {
+            return $this->json([
+                'status' => false,
+                'message' => 'Empty read log',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $startYear = $content['startYear'] ?? null;
+        $startDate = $content['startDate'] ?? null;
+        $endDate = $content['endDate'] ?? null;
+        $rating = $content['rating'] ?? 0;
+
+        if ($startYear) {
+            $randomDay = rand(1, 28);
+            $randomMonth = rand(1, 12);
+            $startDate = new \DateTime("$startYear-$randomMonth-$randomDay");
+            $endDate = new \DateTime("$startYear-$randomMonth-$randomDay");
+            $endDate->modify('+2 day');
+        } elseif ($startDate && $endDate) {
+            $startDate = new \DateTime($startDate);
+            $endDate = new \DateTime($endDate);
+
+            if ($startDate > $endDate) {
+                return $this->json([
+                    'status' => false,
+                    'message' => 'Wrong start date',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        } else {
+            return $this->json([
+                'status' => false,
+                'message' => 'Wrong dates',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $readLog->setBook($book);
+        $readLog->setStartDate($startDate);
+        $readLog->setFinishDate($endDate);
+        $readLog->setRating($rating);
+
+        try {
+            $entityManager->persist($readLog);
+            $entityManager->flush();
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json(['status' => true]);
     }
 
     #[Route('/{id}', name: 'app_read_log_show', methods: ['GET'])]

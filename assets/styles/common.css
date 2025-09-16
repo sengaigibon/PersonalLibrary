@@ -963,6 +963,23 @@
     color: white;
 }
 
+/* Modal toggle sections */
+.years-only {
+    display: block;
+}
+
+.exact-dates {
+    display: none;
+}
+
+.years-only.hidden {
+    display: none;
+}
+
+.exact-dates.visible {
+    display: block;
+}
+
 /* Responsive Modal */
 @media (max-width: 768px) {
     .modal-content {
