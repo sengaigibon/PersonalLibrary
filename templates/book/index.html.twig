@@ -57,6 +57,32 @@
                     alert('Network error occurred');
                 });
         }
+
+        function openLogModal(bookId) {
+            const modal = document.getElementById('logModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeLogModal() {
+            const modal = document.getElementById('logModal');
+            modal.style.display = 'none';
+        }
+
+        function saveLog() {
+            // Save functionality will be implemented later
+            console.log('Save log clicked');
+            closeLogModal();
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('logModal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeLogModal();
+                }
+            });
+        });
     </script>
 {% endblock %}
 
@@ -132,7 +158,7 @@
                     {% if book.id is not null %}
                     <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
                     <a href="{{ path('app_book_edit', {'id': book.id, page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}" class="action-btn btn-edit">✏️ Edit</a>
-                    <a href="#" class="action-btn btn-log">📝 Log</a>
+                    <a href="#" class="action-btn btn-log" onclick="openLogModal({{ book.id }}); return false;">📝 Log</a>
 
                     {% if isCurrentlyReading %}
                         <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish</a>
@@ -158,5 +184,28 @@
         'route_params': {},
         'item_name': 'books'
     }) }}
+</div>
+
+<!-- Log Modal -->
+<div id="logModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeLogModal()">&times;</span>
+        <h2>Log Reading Time</h2>
+        <form id="logForm">
+            <input type="hidden" id="bookId" name="bookId" value="">
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="datetime-local" id="startDate" name="startDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="finishDate">Finish Date:</label>
+                <input type="datetime-local" id="finishDate" name="finishDate" class="form-control">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-base" onclick="saveLog()">💾 Save Log</button>
+                <button type="button" class="btn-base btn-cancel" onclick="closeLogModal()">❌ Cancel</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
