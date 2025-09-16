@@ -291,12 +291,10 @@
 .modern-table .book-title {
     font-weight: 600;
     color: #2c3e50;
-    /* Text overflow handling */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 180px;
-    display: block;
 }
 
 /* Book Details Table */
