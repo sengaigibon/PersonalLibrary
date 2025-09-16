@@ -2,14 +2,8 @@
 
 {% block title %}New ReadLog{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('styles/common.css') }}">
-{% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('scripts/choices.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const booksSelect = document.querySelector('#read_log_book');
