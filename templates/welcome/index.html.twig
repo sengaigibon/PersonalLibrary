@@ -1,35 +1,65 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}RR: The Reading Record{% endblock %}
+{% block title %}Your Personal Library{% endblock %}
 
 {% block body %}
 <style>
-    .main-wrapper {
-        margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; text-align: center;
-        padding-top: 50px;
+    body {
+        background-image: url('{{ asset('images/library-background.png') }}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        min-height: 100vh;
     }
+
+    .main-wrapper {
+        margin: 200px auto 1em;
+        max-width: 600px;
+        width: 95%;
+        font: 18px/1.5 sans-serif;
+        text-align: center;
+        border-radius: 12px;
+        padding: 40px 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(3px);
+    }
+
+    .main-wrapper span {
+        color: #3498db;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
     .enter-button {
-        background: #007bff;
+        background: linear-gradient(135deg, #3498db, #2980b9);
         color: white;
-        padding: 12px 24px;
+        padding: 15px 30px;
         border: none;
-        border-radius: 4px;
-        font-size: 16px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
         cursor: pointer;
         text-decoration: none;
         display: inline-block;
-        margin-top: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
+
     .enter-button:hover {
-        background: #0056b3;
+        background: linear-gradient(135deg, #2980b9, #1f5f99);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        text-decoration: none;
+        color: white;
     }
 </style>
 
 <div class="main-wrapper">
-    <h1>RR: The Reading Record</h1>
-
-    <br><br><br>
-
-    <a href="{{ path('app_dashboard') }}" class="enter-button">Enter</a>
+    <a href="{{ path('app_dashboard') }}" class="enter-button">Enter to the library</a>
 </div>
 {% endblock %}
