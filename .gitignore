@@ -20,3 +20,5 @@
 ###< symfony/asset-mapper ###
 .idea
 .DS_Store
+.env
+docker
