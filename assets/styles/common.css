@@ -390,15 +390,7 @@
     font-size: 1rem;
     transition: all 0.3s ease;
     background-color: #fff;
-}
-
-.form-control-search {
-    padding: 12px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background-color: #fff;
+    box-sizing: border-box;
 }
 
 .form-control:focus {
