@@ -21,6 +21,8 @@
 .idea
 .DS_Store
 .env
+.env.dev
+.env.test
 docker
 .editorconfig
 allenv
