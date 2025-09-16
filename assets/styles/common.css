@@ -181,6 +181,18 @@
     transform: translateY(-1px);
 }
 
+.action-btn.btn-log {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.action-btn.btn-log:hover {
+    background-color: #8e44ad;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
 .action-btn.btn-edit-large {
     background: linear-gradient(135deg, #f39c12, #e67e22);
     padding: 12px 24px;
@@ -299,6 +311,11 @@
 .modern-table th:nth-child(2), /* Title column header */
 .modern-table td:nth-child(2) { /* Title column data */
     max-width: 350px;
+}
+
+.modern-table th:nth-child(3), /* Autor column header */
+.modern-table td:nth-child(3) { /* Autor column data */
+    max-width: 280px;
 }
 
 .modern-table .book-title {

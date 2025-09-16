@@ -132,6 +132,7 @@
                     {% if book.id is not null %}
                     <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
                     <a href="{{ path('app_book_edit', {'id': book.id, page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                    <a href="#" class="action-btn btn-log">📝 Log</a>
 
                     {% if isCurrentlyReading %}
                         <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish</a>
