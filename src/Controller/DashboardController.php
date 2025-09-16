@@ -63,23 +63,33 @@ final class DashboardController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, min(100, $request->query->getInt('limit', 20))); // Default 20, max 100
 
+        // Get search parameters
+        $titleSearch = $request->query->get('title', '');
+        $authorSearch = $request->query->get('author', '');
+
         // Calculate offset
         $offset = ($page - 1) * $limit;
 
-        // Get total count
-        $totalBooks = $bookRepository->count([]);
+        if (!empty($titleSearch) || !empty($authorSearch)) {
+            $books = $bookRepository->findBySearchCriteria($titleSearch, $authorSearch, $limit, $offset);
+            $totalBooks = $bookRepository->countBySearchCriteria($titleSearch, $authorSearch);
+        } else {
+            $totalBooks = $bookRepository->count([]);
+            $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
+        }
 
         // Calculate pagination info
         $totalPages = (int) ceil($totalBooks / $limit);
         $hasNext = $page < $totalPages;
         $hasPrev = $page > 1;
 
-        // Get books for current page
-        $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
-
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'books',
             'books' => $books,
+            'search' => [
+                'title' => $titleSearch,
+                'author' => $authorSearch
+            ],
             'pagination' => [
                 'current_page' => $page,
                 'total_pages' => $totalPages,

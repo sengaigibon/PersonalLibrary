@@ -67,6 +67,28 @@
         <a href="{{ path('app_book_new', {page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}" class="btn-base btn-new">+ Add New Book</a>
     </div>
 
+    <!-- Search Section -->
+    <div class="search-container">
+        <form method="GET" action="{{ path('app_dashboard_books') }}" class="search-form">
+            <div class="search-fields">
+                <div class="search-field">
+                    <label for="title">Search by Title:</label>
+                    <input type="text" id="title" name="title" value="{{ search.title|default('') }}" placeholder="Enter book title..." class="form-control-search">
+                </div>
+                <div class="search-field">
+                    <label for="author">Search by Author:</label>
+                    <input type="text" id="author" name="author" value="{{ search.author|default('') }}" placeholder="Enter author name..." class="form-control-search">
+                </div>
+            </div>
+            <div class="search-actions">
+                <button type="submit" class="btn-base btn-search">🔍 Search</button>
+                <a href="{{ path('app_dashboard_books') }}" class="btn-base btn-clear">🗑️ Clear</a>
+            </div>
+            <!-- Hidden fields to preserve pagination settings -->
+            <input type="hidden" name="limit" value="{{ pagination.items_per_page|default(20) }}">
+        </form>
+    </div>
+
     <table class="table modern-table">
         <thead>
             <tr>
