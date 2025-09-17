@@ -183,8 +183,11 @@
                     </div>
                     <div class="search-field">
                         <label for="status">Search by Status:</label>
-                        <input type="text" id="status" name="status" value="{{ search.status|default('') }}"
-                               placeholder="Enter author name..." class="form-control">
+                        <select id="status" name="status" class="form-control">
+                            <option value="">Choose a status...</option>
+                            <option value="NOTREAD" {{ search.status|default('') == 'NOTREAD' ? 'selected' : '' }}>Not read</option>
+                            <option value="FINISHED" {{ search.status|default('') == 'FINISHED' ? 'selected' : '' }}>Read</option>
+                        </select>
                     </div>
                 </div>
                 <div class="search-actions">
