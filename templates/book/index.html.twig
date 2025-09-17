@@ -271,7 +271,11 @@
         <!-- Pagination Controls -->
         {{ include('components/pagination.html.twig', {
             'route_name': 'app_dashboard_books',
-            'route_params': {},
+            'route_params': {
+                title: search.title|default(''),
+                author: search.author|default(''),
+                status: search.status|default('')
+            } | filter(v => v is not empty),
             'item_name': 'books'
         }) }}
     </div>

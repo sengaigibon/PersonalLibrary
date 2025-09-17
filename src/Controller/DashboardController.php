@@ -89,7 +89,8 @@ final class DashboardController extends AbstractController
             'books' => $books,
             'search' => [
                 'title' => $titleSearch,
-                'author' => $authorSearch
+                'author' => $authorSearch,
+                'status' => $statusSearch,
             ],
             'pagination' => [
                 'current_page' => $page,
