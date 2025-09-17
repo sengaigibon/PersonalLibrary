@@ -24,7 +24,7 @@ class BookRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('b');
 
-        $this->applyConditions($title, $qb, $author, $status);
+        $this->applyConditions($qb, $title, $author, $status);
 
         return $qb->orderBy('b.id', 'ASC')
             ->setFirstResult($offset)
@@ -41,12 +41,12 @@ class BookRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('b')
                    ->select('COUNT(b.id)');
 
-        $this->applyConditions($title, $qb, $author, $status);
+        $this->applyConditions($qb, $title, $author, $status);
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
-    public function applyConditions(string $title, QueryBuilder $qb, string $author, string $status): void
+    public function applyConditions(QueryBuilder $qb, string $title, string $author, string $status): void
     {
         if (!empty($title)) {
             $qb->andWhere('LOWER(b.title) LIKE LOWER(:title)')
@@ -61,10 +61,10 @@ class BookRepository extends ServiceEntityRepository
         if (!empty($status)) {
             if ($status === Book::STATUS_FINISHED) {
                 $qb->innerJoin('b.readLogs', 'rl')
-                    ->where('rl.finishDate IS NOT NULL');
+                    ->andWhere('rl.finishDate IS NOT NULL');
             } else {
                 $qb->leftJoin('b.readLogs', 'rl')
-                    ->where('rl.finishDate IS NULL OR rl.id IS NULL');
+                    ->andWhere('rl.finishDate IS NULL OR rl.id IS NULL');
             }
         }
     }
