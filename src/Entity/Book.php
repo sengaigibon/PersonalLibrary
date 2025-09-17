@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book
 {
+    public const string STATUS_FINISHED = 'FINISHED';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

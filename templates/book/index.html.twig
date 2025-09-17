@@ -181,6 +181,11 @@
                         <input type="text" id="author" name="author" value="{{ search.author|default('') }}"
                                placeholder="Enter author name..." class="form-control">
                     </div>
+                    <div class="search-field">
+                        <label for="status">Search by Status:</label>
+                        <input type="text" id="status" name="status" value="{{ search.status|default('') }}"
+                               placeholder="Enter author name..." class="form-control">
+                    </div>
                 </div>
                 <div class="search-actions">
                     <button type="submit" class="btn-base btn-search">🔍 Search</button>

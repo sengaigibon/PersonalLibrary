@@ -702,14 +702,14 @@
 
 .search-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: end;
 }
 
 .search-field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
 }
 
 .search-field label {

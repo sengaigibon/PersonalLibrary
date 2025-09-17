@@ -66,13 +66,14 @@ final class DashboardController extends AbstractController
         // Get search parameters
         $titleSearch = $request->query->get('title', '');
         $authorSearch = $request->query->get('author', '');
+        $statusSearch = $request->query->get('status', '');
 
         // Calculate offset
         $offset = ($page - 1) * $limit;
 
-        if (!empty($titleSearch) || !empty($authorSearch)) {
-            $books = $bookRepository->findBySearchCriteria($titleSearch, $authorSearch, $limit, $offset);
-            $totalBooks = $bookRepository->countBySearchCriteria($titleSearch, $authorSearch);
+        if (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
+            $books = $bookRepository->findBySearchCriteria($titleSearch, $authorSearch, $statusSearch, $limit, $offset);
+            $totalBooks = $bookRepository->countBySearchCriteria($titleSearch, $authorSearch, $statusSearch);
         } else {
             $totalBooks = $bookRepository->count([]);
             $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
