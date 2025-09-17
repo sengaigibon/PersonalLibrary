@@ -31,7 +31,7 @@
                         data: data
                     }));
                 })
-                .then(function(result) {
+                .then(function (result) {
                     if (result.status === 200 && result.data.success) {
                         buttonElement.textContent = text;
                         buttonElement.style.backgroundColor = '#95a5a6';
@@ -57,18 +57,150 @@
                     alert('Network error occurred');
                 });
         }
+
+        function openLogModal(bookId, element) {
+            const modal = document.getElementById('logModal');
+            const checkbox = document.getElementById('exactDates');
+            const yearsOnly = document.querySelector('.years-only');
+            const exactDates = document.querySelector('.exact-dates');
+
+            document.getElementById('bookId').value = bookId;
+            document.getElementById('logPath').value = element.getAttribute('data-path');
+
+            checkbox.checked = false;
+            yearsOnly.classList.remove('hidden');
+            exactDates.classList.remove('visible');
+
+            modal.style.display = 'flex';
+        }
+
+        function closeLogModal() {
+            const modal = document.getElementById('logModal');
+            const form = document.getElementById('logForm');
+
+            form.reset();
+            modal.style.display = 'none';
+        }
+
+        function saveLog() {
+            const url = document.getElementById('logPath')?.value;
+            const bookId = document.getElementById('bookId')?.value;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    startYear: document.getElementById('startYear')?.value,
+                    startDate: document.getElementById('startDate')?.value,
+                    endDate: document.getElementById('endDate')?.value,
+                    rating: document.getElementById('rating')?.value
+                })
+            }).then(response => {
+                return response.json().then(data => ({
+                    status: response.status,
+                    data: data
+                }));
+            }).then(result => {
+                if (result.status === 200 && result.data.status) {
+
+                    const row = document.getElementById('tr-book-' + bookId);
+                    if (row) {
+                        const statusCell = row.querySelector('.read-status');
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="status-finished">✅ Finished</span>';
+                        }
+                    }
+
+                    closeLogModal();
+                } else {
+                    alert('Something went wrong: ' + result.data.message);
+                }
+            }).catch(error => {
+                console.error('Error making request:', error);
+                alert('Network error occurred');
+            });
+        }
+
+        function toggleDateMode() {
+            const checkbox = document.getElementById('exactDates');
+            const yearsOnly = document.querySelector('.years-only');
+            const exactDates = document.querySelector('.exact-dates');
+
+            if (checkbox.checked) {
+                // Show exact dates, hide years only
+                yearsOnly.classList.add('hidden');
+                exactDates.classList.add('visible');
+            } else {
+                // Show years only, hide exact dates
+                yearsOnly.classList.remove('hidden');
+                exactDates.classList.remove('visible');
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = document.getElementById('logModal');
+            const exactDatesCheckbox = document.getElementById('exactDates');
+
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeLogModal();
+                }
+            });
+
+            // Add event listener for checkbox toggle
+            if (exactDatesCheckbox) {
+                exactDatesCheckbox.addEventListener('change', toggleDateMode);
+            }
+        });
     </script>
 {% endblock %}
 
 {% block body %}
-<div class="books-container">
-    <div class="books-header">
-        <h1>📚 Library</h1>
-        <a href="{{ path('app_book_new') }}" class="btn-base btn-new">+ Add New Book</a>
-    </div>
+    <div class="books-container">
+        <div class="books-header">
+            <h1>📚 Library</h1>
+            <a href="{{ path('app_book_new', {page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}"
+               class="btn-base btn-new">+ Add New Book</a>
+        </div>
 
-    <table class="table modern-table">
-        <thead>
+        <!-- Search Section -->
+        <div class="search-container">
+            <form method="GET" action="{{ path('app_dashboard_books') }}" class="search-form">
+                <div class="search-fields">
+                    <div class="search-field">
+                        <label for="title">Search by Title:</label>
+                        <input type="text" id="title" name="title" value="{{ search.title|default('') }}"
+                               placeholder="Enter book title..." class="form-control">
+                    </div>
+                    <div class="search-field">
+                        <label for="author">Search by Author:</label>
+                        <input type="text" id="author" name="author" value="{{ search.author|default('') }}"
+                               placeholder="Enter author name..." class="form-control">
+                    </div>
+                    <div class="search-field">
+                        <label for="status">Search by Status:</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="">Choose a status...</option>
+                            <option value="NOTREAD" {{ search.status|default('') == 'NOTREAD' ? 'selected' : '' }}>Not read</option>
+                            <option value="FINISHED" {{ search.status|default('') == 'FINISHED' ? 'selected' : '' }}>Read</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="search-actions">
+                    <button type="submit" class="btn-base btn-search">🔍 Search</button>
+                    <a href="{{ path('app_dashboard_books') }}" class="btn-base btn-clear">🗑️ Clear</a>
+                </div>
+                <!-- Hidden fields to preserve pagination settings -->
+                <input type="hidden" name="limit" value="{{ pagination.items_per_page|default(20) }}">
+            </form>
+        </div>
+
+        <table class="table modern-table">
+            <thead>
             <tr>
                 <th>ID</th>
                 <th>Title</th>
@@ -77,62 +209,119 @@
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for book in books %}
-            {% if book is not null and book is not empty %}
-            <tr id="tr-book-{{ book.id }}">
-                <td>{{ book.id }}</td>
-                <td class="book-title">{{ book.title ?? '' }}</td>
-                <td class="book-author">{{ book.author ?? '' }}</td>
-                <td class="pages">{{ book.pages ?? '?' }}</td>
-                <td class="read-status">
-                    {% set hasFinishedReading = false %}
-                    {% set isCurrentlyReading = false %}
+            </thead>
+            <tbody>
+            {% for book in books %}
+                {% if book is not null and book is not empty %}
+                    <tr id="tr-book-{{ book.id }}">
+                        <td>{{ book.id }}</td>
+                        <td class="book-title">{{ book.title ?? '' }}</td>
+                        <td class="book-author">{{ book.author ?? '' }}</td>
+                        <td class="pages">{{ book.pages ?? '?' }}</td>
+                        <td class="read-status">
+                            {% set hasFinishedReading = false %}
+                            {% set isCurrentlyReading = false %}
 
-                    {% for readLog in book.readLogs %}
-                        {% if readLog.startDate is not empty and readLog.finishDate is empty %}
-                            {% set isCurrentlyReading = true %}
-                        {% elseif readLog.finishDate is not empty %}
-                            {% set hasFinishedReading = true %}
-                        {% endif %}
-                    {% endfor %}
+                            {% for readLog in book.readLogs %}
+                                {% if readLog.startDate is not empty and readLog.finishDate is empty %}
+                                    {% set isCurrentlyReading = true %}
+                                {% elseif readLog.finishDate is not empty %}
+                                    {% set hasFinishedReading = true %}
+                                {% endif %}
+                            {% endfor %}
 
-                    {% if isCurrentlyReading %}
-                        <span class="status-reading">📖 Reading</span>
-                    {% elseif hasFinishedReading %}
-                        <span class="status-finished">✅ Finished</span>
-                    {% else %}
-                        <span class="status-unread">📚 Unread</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if book.id is not null %}
-                    <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁 Show</a>
-                    <a href="{{ path('app_book_edit', {'id': book.id}) }}" class="action-btn btn-edit">✏️ Edit</a>
+                            {% if isCurrentlyReading %}
+                                <span class="status-reading">📖 Reading</span>
+                            {% elseif hasFinishedReading %}
+                                <span class="status-finished">✅ Finished</span>
+                            {% else %}
+                                <span class="status-unread">📚 Unread</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if book.id is not null %}
+                                <a href="{{ path('app_book_show', {'id': book.id}) }}" class="action-btn btn-show">👁
+                                    Show</a>
+                                <a href="{{ path('app_book_edit', {'id': book.id, page: pagination.current_page|default(1), limit: pagination.items_per_page|default(20)}) }}"
+                                   class="action-btn btn-edit">✏️ Edit</a>
+                                <a href="#" class="action-btn btn-log"
+                                   data-path="{{ path('app_read_log_quicknew', {'id': book.id}) }}"
+                                   onclick="openLogModal({{ book.id }}, this); return false;">📝 Log</a>
 
-                    {% if isCurrentlyReading %}
-                        <a href="#" class="action-btn btn-finish-reading" data-path="{{ path('app_book_finish', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅ Finish Reading</a>
-                    {% else %}
-                        <a href="#" class="action-btn btn-start-reading" data-path="{{ path('app_book_start', {'id': book.id}) }}" onclick="updateStatus({{ book.id }}, this, 'reading'); return false;">📖 Start Reading</a>
-                    {% endif %}
+                                {% if isCurrentlyReading %}
+                                    <a href="#" class="action-btn btn-finish-reading"
+                                       data-path="{{ path('app_book_finish', {'id': book.id}) }}"
+                                       onclick="updateStatus({{ book.id }}, this, 'finished'); return false;">✅
+                                        Finish</a>
+                                {% else %}
+                                    <a href="#" class="action-btn btn-start-reading"
+                                       data-path="{{ path('app_book_start', {'id': book.id}) }}"
+                                       onclick="updateStatus({{ book.id }}, this, 'reading'); return false;">📖 Start</a>
+                                {% endif %}
 
-                    {% endif %}
-                </td>
-            </tr>
-            {% endif %}
-        {% else %}
-            <tr>
-                <td colspan="6" class="no-records">📖 No books found. Start building your library!</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% else %}
+                <tr>
+                    <td colspan="6" class="no-records">📖 No books found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-    {{ include('components/pagination.html.twig', {
-        'route_name': 'app_dashboard_books',
-        'route_params': {},
-        'item_name': 'books'
-    }) }}
-</div>
+        <!-- Pagination Controls -->
+        {{ include('components/pagination.html.twig', {
+            'route_name': 'app_dashboard_books',
+            'route_params': {
+                title: search.title|default(''),
+                author: search.author|default(''),
+                status: search.status|default('')
+            } | filter(v => v is not empty),
+            'item_name': 'books'
+        }) }}
+    </div>
+
+    <!-- Log Modal -->
+    <div id="logModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLogModal()">&times;</span>
+            <h2>Log Reading Time</h2>
+            <form id="logForm" class="logForm">
+                <input type="hidden" id="bookId" name="bookId" value="">
+                <input type="hidden" id="logPath" name="logPath" value="">
+                <div class="form-group">
+                    <label for="exactDates">Exact dates</label>
+                    <input type="checkbox" id="exactDates" name="exactDates" class="form-control">
+                </div>
+
+                <div class="years-only">
+                    <div class="form-group">
+                        <label for="startYear">Start Year:</label>
+                        <input type="number" id="startYear" name="startYear" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="exact-dates">
+                    <div class="form-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Finish Date:</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="rating">Rating</label>
+                    <input type="number" id="rating" name="rating" min="1" max="5" class="form-control">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-base btn-search" onclick="saveLog()">💾 Save Log</button>
+                    <button type="button" class="btn-base btn-cancel" onclick="closeLogModal()">❌ Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock %}

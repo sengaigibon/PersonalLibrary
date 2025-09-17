@@ -19,6 +19,10 @@ final class BookController extends AbstractController
     #[Route('/new', name: 'app_book_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, BookRepository $bookRepository): Response
     {
+        // Get pagination parameters to preserve them
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
+
         $book = new Book();
         $form = $this->createForm(BookType::class, $book);
         $form->handleRequest($request);
@@ -27,19 +31,20 @@ final class BookController extends AbstractController
             $bookExists = !empty($bookRepository->findBy(['title' => $book->getTitle()]));
             if ($bookExists) {
                 $this->addFlash('error', 'Book already exists!!');
-                return $this->redirectToRoute('app_book_new', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_book_new', ['page' => $page, 'limit' => $limit], Response::HTTP_SEE_OTHER);
             }
             $entityManager->persist($book);
             $entityManager->flush();
 
             $this->addFlash('success', 'Book created successfully!');
-            return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_books', ['page' => $page, 'limit' => $limit], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'new-book',
             'book' => $book,
             'form' => $form,
+            'pagination_params' => ['page' => $page, 'limit' => $limit]
         ]);
     }
 
@@ -55,6 +60,10 @@ final class BookController extends AbstractController
     #[Route('/{id}/edit', name: 'app_book_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Book $book, EntityManagerInterface $entityManager): Response
     {
+        // Get pagination parameters to preserve them
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
+
         $form = $this->createForm(BookType::class, $book);
         $form->handleRequest($request);
 
@@ -62,13 +71,14 @@ final class BookController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Book saved successfully!');
-            return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_books', ['page' => $page, 'limit' => $limit], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'edit-book',
             'book' => $book,
             'form' => $form,
+            'pagination_params' => ['page' => $page, 'limit' => $limit]
         ]);
     }
 
@@ -85,7 +95,7 @@ final class BookController extends AbstractController
     }
 
     #[Route('/query/{isbn}', name: 'app_book_query', methods: ['GET'])]
-    public function query(Request $request, string $isbn, OpenLibraryApi $olAPI): Response
+    public function query(string $isbn, OpenLibraryApi $olAPI): Response
     {
         $result = $olAPI->getBookData($isbn);
 

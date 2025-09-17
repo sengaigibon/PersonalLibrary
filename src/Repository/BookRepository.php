@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Book;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,55 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
-    //    /**
-    //     * @return Book[] Returns an array of Book objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Find books by search criteria with pagination
+     */
+    public function findBySearchCriteria(string $title = '', string $author = '', string $status = '', int $limit = 20, int $offset = 0): array
+    {
+        $qb = $this->createQueryBuilder('b');
 
-    //    public function findOneBySomeField($value): ?Book
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $this->applyConditions($qb, $title, $author, $status);
+
+        return $qb->orderBy('b.id', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Count books by search criteria
+     */
+    public function countBySearchCriteria(string $title = '', string $author = '', string $status = ''): int
+    {
+        $qb = $this->createQueryBuilder('b')
+                   ->select('COUNT(b.id)');
+
+        $this->applyConditions($qb, $title, $author, $status);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function applyConditions(QueryBuilder $qb, string $title, string $author, string $status): void
+    {
+        if (!empty($title)) {
+            $qb->andWhere('LOWER(b.title) LIKE LOWER(:title)')
+                ->setParameter('title', '%' . $title . '%');
+        }
+
+        if (!empty($author)) {
+            $qb->andWhere('LOWER(b.author) LIKE LOWER(:author)')
+                ->setParameter('author', '%' . $author . '%');
+        }
+
+        if (!empty($status)) {
+            if ($status === Book::STATUS_FINISHED) {
+                $qb->innerJoin('b.readLogs', 'rl')
+                    ->andWhere('rl.finishDate IS NOT NULL');
+            } else {
+                $qb->leftJoin('b.readLogs', 'rl')
+                    ->andWhere('rl.finishDate IS NULL OR rl.id IS NULL');
+            }
+        }
+    }
 }

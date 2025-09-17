@@ -13,12 +13,7 @@
 
     <div class="form-group">
         {{ form_label(form.isbn) }}
-        <div class="input-group">
-            {{ form_widget(form.isbn, {'attr': {'class': 'form-control'}}) }}
-            <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary" id="search-isbn-btn">Search</button>
-            </div>
-        </div>
+        {{ form_widget(form.isbn, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.isbn) }}
     </div>
 
@@ -26,6 +21,12 @@
         {{ form_label(form.pages) }}
         {{ form_widget(form.pages, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.pages) }}
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.isReference) }}
+        {{ form_widget(form.isReference, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.isReference) }}
     </div>
 
     <div class="form-group">

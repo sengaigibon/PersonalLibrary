@@ -6,7 +6,7 @@
 <div class="edit-container">
     <div class="edit-header">
         <h1>✏️ Edit Book</h1>
-        <a href="{{ path('app_dashboard_books') }}" class="btn-base btn-back">← Back to Library</a>
+        <a href="{{ path('app_dashboard_books', pagination_params|default({})) }}" class="btn-base btn-back">← Back to Library</a>
     </div>
 
     <div class="form-card">

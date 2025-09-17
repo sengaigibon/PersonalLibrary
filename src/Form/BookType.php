@@ -16,6 +16,9 @@ class BookType extends AbstractType
             ->add('author')
             ->add('isbn')
             ->add('pages')
+            ->add('isReference', null, [
+                'label' => 'Is a reference book?',
+            ])
             ->add('purchaseDate')
         ;
     }

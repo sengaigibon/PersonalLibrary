@@ -39,7 +39,8 @@ final class DashboardController extends AbstractController
             $readingNowList[] = $logItem->getBook()->getTitle();
         });
 
-        $readingSpeed = round($readingTime / count($logs), 2);
+        $readingSpeed = $logs ? round($readingTime / count($logs), 2) : 0;
+        $totalReadPercentage = $librarySize ? round($totalLogs * 100 / $librarySize, 2) : 0;
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
@@ -50,7 +51,7 @@ final class DashboardController extends AbstractController
             'pages' => $pages,
             'librarySize' => $librarySize,
             'totalLogs' => $totalLogs,
-            'totalReadPercentage' => round($totalLogs * 100 / $librarySize, 2),
+            'totalReadPercentage' => $totalReadPercentage,
             'redingNowList' => $readingNowList
         ]);
     }
@@ -62,23 +63,35 @@ final class DashboardController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, min(100, $request->query->getInt('limit', 20))); // Default 20, max 100
 
+        // Get search parameters
+        $titleSearch = $request->query->get('title', '');
+        $authorSearch = $request->query->get('author', '');
+        $statusSearch = $request->query->get('status', '');
+
         // Calculate offset
         $offset = ($page - 1) * $limit;
 
-        // Get total count
-        $totalBooks = $bookRepository->count([]);
+        if (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
+            $books = $bookRepository->findBySearchCriteria($titleSearch, $authorSearch, $statusSearch, $limit, $offset);
+            $totalBooks = $bookRepository->countBySearchCriteria($titleSearch, $authorSearch, $statusSearch);
+        } else {
+            $totalBooks = $bookRepository->count([]);
+            $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
+        }
 
         // Calculate pagination info
         $totalPages = (int) ceil($totalBooks / $limit);
         $hasNext = $page < $totalPages;
         $hasPrev = $page > 1;
 
-        // Get books for current page
-        $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
-
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'books',
             'books' => $books,
+            'search' => [
+                'title' => $titleSearch,
+                'author' => $authorSearch,
+                'status' => $statusSearch,
+            ],
             'pagination' => [
                 'current_page' => $page,
                 'total_pages' => $totalPages,
