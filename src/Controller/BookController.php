@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/books')]
@@ -103,8 +104,14 @@ final class BookController extends AbstractController
     }
 
     #[Route('/start/{id}', name: 'app_book_start', methods: ['GET'])]
-    public function startReading(Book $book, EntityManagerInterface $entityManager): Response
+    public function startReading(Book $book, EntityManagerInterface $entityManager, SessionInterface $session): Response
     {
+        $readerId = $session->get('current_reader_id');
+
+        if (!$readerId) {
+            return $this->json(['error' => 'No reader has been set, go to the welcome page'], Response::HTTP_BAD_REQUEST);
+        }
+
         try {
             $readLog = new ReadLog();
             $readLog->setStartDate(new \DateTime());
