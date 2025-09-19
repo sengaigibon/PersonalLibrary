@@ -30,6 +30,10 @@ class ReadLog
     #[ORM\JoinColumn(nullable: false)]
     private ?Book $book = null;
 
+    #[ORM\ManyToOne(inversedBy: 'Readings')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Person $Reader = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -91,6 +95,18 @@ class ReadLog
     public function setBook(?Book $book): static
     {
         $this->book = $book;
+
+        return $this;
+    }
+
+    public function getReader(): ?Person
+    {
+        return $this->Reader;
+    }
+
+    public function setReader(?Person $Reader): static
+    {
+        $this->Reader = $Reader;
 
         return $this;
     }
