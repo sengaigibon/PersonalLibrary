@@ -5,18 +5,27 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Entity\ReadLog;
 use App\Form\ReadLogType;
+use App\Repository\PersonRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/read/log')]
 final class ReadLogController extends AbstractController
 {
     #[Route('/new', name: 'app_read_log_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, PersonRepository $personRepository): Response
     {
+        $readerId = $session->get('current_reader_id');
+
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_dashboard');
+        }
+
         $readLog = new ReadLog();
         $form = $this->createForm(ReadLogType::class, $readLog);
         $form->handleRequest($request);
@@ -36,8 +45,17 @@ final class ReadLogController extends AbstractController
     }
 
     #[Route('/quicknew/{id}', name: 'app_read_log_quicknew', methods: ['POST'])]
-    public function quickNew(Book $book, Request $request, EntityManagerInterface $entityManager): Response
+    public function quickNew(Book $book, Request $request, EntityManagerInterface $entityManager, SessionInterface $session, PersonRepository $personRepository): Response
     {
+        $readerId = $session->get('current_reader_id');
+
+        if (!$readerId) {
+            return $this->json([
+                'status' => false,
+                'message' => 'No reader has been set, go to the welcome page',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         $readLog = new ReadLog();
         $content = json_decode($request->getContent() ?? '', true);
 
@@ -76,6 +94,7 @@ final class ReadLogController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        $readLog->setReader($personRepository->find($readerId));
         $readLog->setBook($book);
         $readLog->setStartDate($startDate);
         $readLog->setFinishDate($endDate);

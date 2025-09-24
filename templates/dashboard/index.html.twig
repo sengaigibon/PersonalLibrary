@@ -27,7 +27,9 @@
         padding-bottom: 15px;
     }
 
-    .menu-item {
+
+    .menu-item,
+    .menu-item-no-hover {
         display: block;
         color: #bdc3c7;
         text-decoration: none;
@@ -70,6 +72,10 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <h3>Menu</h3>
+
+        {% if app.session.get('current_reader') %}
+            <span class="menu-item-no-hover">Welcome, {{ app.session.get('current_reader').nickname }}!</span>
+        {% endif %}
 
         <a href="{{ path('app_dashboard') }}" class="menu-item {% if currentPage == 'dashboard' %}active{% endif %}">
             📊 Dashboard
