@@ -59,6 +59,7 @@
     transition: all 0.3s ease;
     display: inline-block;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .btn-base:hover {
@@ -731,6 +732,8 @@
     background: linear-gradient(135deg, #27ae60, #229954);
     color: white;
     box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    height: 44px;
+    font-size: inherit;
 }
 
 .btn-search:hover {
@@ -761,10 +764,22 @@
     .search-actions {
         flex-direction: column;
         gap: 10px;
+        width: 100%;
     }
 
-    .search-actions .btn-base {
+    .search-actions .btn-search,
+    .search-actions .btn-clear {
         width: 100%;
+    }
+}
+
+@media (max-width: 1776px) {
+    .action-btn,
+    .action-btn.btn-show
+    .action-btn.btn-edit
+    .action-btn.btn-log
+    .action-btn.btn-start-reading {
+        margin-top: 5px;
     }
 }
 
@@ -894,7 +909,7 @@
 .modal-content {
     background-color: white;
     width: 600px;
-    height: 600px;
+    height: 510px;
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     position: relative;
@@ -984,7 +999,7 @@
 @media (max-width: 768px) {
     .modal-content {
         width: 90%;
-        height: 80%;
+        height: 60%;
         margin: 10px;
     }
 
