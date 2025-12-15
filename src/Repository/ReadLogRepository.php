@@ -19,7 +19,7 @@ class ReadLogRepository extends ServiceEntityRepository
     public function findByYear(int $year, int $readerId)
     {
         return $this->createQueryBuilder('r')
-            ->innerJoin('r.Reader', 'p')
+            ->innerJoin('r.reader', 'p')
             ->where('r.finishDate >= :initialDate AND r.finishDate <= :endDate')
             ->andWhere('p.id = :readerId')
             ->setParameter('initialDate', "$year-01-01")
@@ -33,7 +33,7 @@ class ReadLogRepository extends ServiceEntityRepository
     public function findUnfinished(int $readerId)
     {
         return $this->createQueryBuilder('r')
-            ->innerJoin('r.Reader', 'p')
+            ->innerJoin('r.reader', 'p')
             ->where('r.finishDate is null')
             ->andWhere('p.id = :readerId')
             ->setParameter('readerId', $readerId)
