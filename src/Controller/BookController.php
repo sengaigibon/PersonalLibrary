@@ -6,6 +6,7 @@ use App\Entity\Book;
 use App\Entity\ReadLog;
 use App\Form\BookType;
 use App\Repository\BookRepository;
+use App\Repository\PersonRepository;
 use App\Services\OpenLibraryApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -104,7 +105,7 @@ final class BookController extends AbstractController
     }
 
     #[Route('/start/{id}', name: 'app_book_start', methods: ['GET'])]
-    public function startReading(Book $book, EntityManagerInterface $entityManager, SessionInterface $session): Response
+    public function startReading(Book $book, EntityManagerInterface $entityManager, SessionInterface $session, PersonRepository $personRepository): Response
     {
         $readerId = $session->get('current_reader_id');
 
@@ -115,6 +116,7 @@ final class BookController extends AbstractController
         try {
             $readLog = new ReadLog();
             $readLog->setStartDate(new \DateTime());
+            $readLog->setReader($personRepository->find($readerId));
             $readLog->setBook($book);
             $entityManager->persist($readLog);
             $entityManager->flush();
