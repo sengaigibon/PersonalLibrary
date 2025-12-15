@@ -16,21 +16,27 @@ class ReadLogRepository extends ServiceEntityRepository
         parent::__construct($registry, ReadLog::class);
     }
 
-    public function findByYear(int $year)
+    public function findByYear(int $year, int $readerId)
     {
         return $this->createQueryBuilder('r')
+            ->innerJoin('r.Reader', 'p')
             ->where('r.finishDate >= :initialDate AND r.finishDate <= :endDate')
+            ->andWhere('p.id = :readerId')
             ->setParameter('initialDate', "$year-01-01")
             ->setParameter('endDate', "$year-12-31")
+            ->setParameter('readerId', $readerId)
             ->orderBy('r.finishDate', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-    public function findUnfinished()
+    public function findUnfinished(int $readerId)
     {
         return $this->createQueryBuilder('r')
+            ->innerJoin('r.Reader', 'p')
             ->where('r.finishDate is null')
+            ->andWhere('p.id = :readerId')
+            ->setParameter('readerId', $readerId)
             ->getQuery()->getResult();
     }
 }

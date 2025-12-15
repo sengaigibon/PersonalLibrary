@@ -8,16 +8,23 @@ use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository): Response
+    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session): Response
     {
+        $readerId = $session->get('current_reader_id');
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_main');
+        }
+
         $thisYear = new \DateTime()->format('Y');
-        $logs = $readLogRepository->findByYear($thisYear);
-        $unfinished = $readLogRepository->findUnfinished() ?: [];
+        $logs = $readLogRepository->findByYear($thisYear, $readerId);
+        $unfinished = $readLogRepository->findUnfinished($readerId) ?: [];
         $books = [];
         $readingTime = 0;
         $pages = 0;
