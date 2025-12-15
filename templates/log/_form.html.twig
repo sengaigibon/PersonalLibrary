@@ -6,6 +6,12 @@
     </div>
 
     <div class="form-group">
+        {{ form_label(form.reader) }}
+        {{ form_widget(form.reader, {'attr': {'class': 'form-control searchable-select'}}) }}
+        {{ form_errors(form.reader) }}
+    </div>
+
+    <div class="form-group">
         {{ form_label(form.startDate) }}
         {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
         {{ form_errors(form.startDate) }}

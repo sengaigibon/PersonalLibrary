@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Book;
+use App\Entity\Person;
 use App\Entity\ReadLog;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -22,6 +23,12 @@ class ReadLogType extends AbstractType
                 'class' => Book::class,
                 'choice_label' => 'title',
                 'placeholder' => 'Choose a book',
+                'required' => true,
+            ])
+            ->add('reader', EntityType::class, [
+                'class' => Person::class,
+                'choice_label' => 'fullname',
+                'placeholder' => 'Choose a reader',
                 'required' => true,
             ])
         ;
