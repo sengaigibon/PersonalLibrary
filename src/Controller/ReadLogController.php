@@ -31,6 +31,7 @@ final class ReadLogController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $readLog->setReader($personRepository->find($readerId));
             $entityManager->persist($readLog);
             $entityManager->flush();
 
