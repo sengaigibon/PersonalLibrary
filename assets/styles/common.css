@@ -836,7 +836,9 @@
         flex-direction: column;
     }
 
-    .action-btn,
+    .action-btn, 
+    .btn-save, 
+    .btn-update,
     .action-btn.btn-edit-large {
         width: 100%;
     }
