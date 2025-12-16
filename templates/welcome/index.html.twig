@@ -5,21 +5,16 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        const setReaderUrl = '{{ path('app_set_reader') }}';
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('btnEnter').addEventListener('click', function(event) {
-                debugger;
+        function setReader() {
+            const readerSelect = document.getElementById('reader');
 
-                const readerSelect = document.getElementById('reader');
-
-                if (!readerSelect.value) {
-                    alert('Select a reader');
-                } else {
-                    const dashboardUrl = '{{ path('app_dashboard') }}' + '?readerId=' + readerSelect.value;
-                    window.location.href = dashboardUrl;
-                }
-            })
-        });
+            if (!readerSelect.value) {
+                alert('Select a reader');
+            } else {
+                const dashboardUrl = '{{ path('app_dashboard') }}' + '?readerId=' + readerSelect.value;
+                window.location.href = dashboardUrl;
+            }
+        }
     </script>
 {% endblock %}
 
@@ -42,6 +37,6 @@
         <option value="{{ reader.id }}">{{ reader.nickname }} ({{ reader.fullName }})</option>
         {% endfor %}
     </select>
-    <a href="#" id="btnEnter" class="enter-button">Enter to the library</a>
+    <a href="#" id="btnEnter" class="enter-button" onclick="setReader()">Enter to the library</a>
 </div>
 {% endblock %}
