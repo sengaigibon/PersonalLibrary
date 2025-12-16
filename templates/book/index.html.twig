@@ -185,8 +185,8 @@
                         <label for="status">Search by Status:</label>
                         <select id="status" name="status" class="form-control">
                             <option value="">Choose a status...</option>
-                            <option value="NOTREAD" {{ search.status|default('') == 'NOTREAD' ? 'selected' : '' }}>Not read</option>
-                            <option value="FINISHED" {{ search.status|default('') == 'FINISHED' ? 'selected' : '' }}>Read</option>
+                            <option value="NOTREAD" {{ search.status|default('') == 'NOTREAD' ? 'selected' : '' }}>Reading</option>
+                            <option value="FINISHED" {{ search.status|default('') == 'FINISHED' ? 'selected' : '' }}>Finished</option>
                         </select>
                     </div>
                 </div>
