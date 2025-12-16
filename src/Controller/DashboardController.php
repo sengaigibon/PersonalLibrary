@@ -14,13 +14,17 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session): Response
+    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session, Request $request): Response
     {
-        $readerId = $session->get('current_reader_id');
+        $readerId = $request->query->get('readerId') ?: $session->get('current_reader_id');
+    
         if (!$readerId) {
             $this->addFlash('error', 'Choose a reader please');
             return $this->redirectToRoute('app_main');
         }
+        
+        // Store readerId in session for future requests
+        $session->set('current_reader_id', $readerId);
 
         $thisYear = new \DateTime()->format('Y');
         $logs = $readLogRepository->findByYear($thisYear, $readerId);
@@ -120,11 +124,17 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/read/log', name: 'app_dashboard_reading_log')]
-    public function readingLog(ReadLogRepository $readLogRepository): Response
+    public function readingLog(ReadLogRepository $readLogRepository, SessionInterface $session): Response
     {
+        $readerId = $session->get('current_reader_id');
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_main');
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'logs',
-            'readLogs' => $readLogRepository->findBy([], ['startDate' => 'ASC']),
+            'readLogs' => $readLogRepository->findBy(['reader' => $readerId], ['startDate' => 'ASC']),
         ]);
     }
 }
