@@ -32,7 +32,7 @@ class ReadLog
 
     #[ORM\ManyToOne(inversedBy: 'Readings')]
     #[ORM\JoinColumn(nullable: true)]
-    private ?Person $Reader = null;
+    private ?Person $reader = null;
 
     public function getId(): ?int
     {
@@ -101,12 +101,12 @@ class ReadLog
 
     public function getReader(): ?Person
     {
-        return $this->Reader;
+        return $this->reader;
     }
 
-    public function setReader(?Person $Reader): static
+    public function setReader(?Person $reader): static
     {
-        $this->Reader = $Reader;
+        $this->reader = $reader;
 
         return $this;
     }

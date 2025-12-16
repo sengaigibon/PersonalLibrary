@@ -8,23 +8,34 @@ use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository): Response
+    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session, Request $request): Response
     {
+        $readerId = $request->query->get('readerId') ?: $session->get('current_reader_id');
+    
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_main');
+        }
+        
+        // Store readerId in session for future requests
+        $session->set('current_reader_id', $readerId);
+
         $thisYear = new \DateTime()->format('Y');
-        $logs = $readLogRepository->findByYear($thisYear);
-        $unfinished = $readLogRepository->findUnfinished() ?: [];
+        $logs = $readLogRepository->findByYear($thisYear, $readerId);
+        $unfinished = $readLogRepository->findUnfinished($readerId) ?: [];
         $books = [];
         $readingTime = 0;
         $pages = 0;
         $readingNowList = [];
 
         $librarySize = $bookRepository->count();
-        $totalLogs = $readLogRepository->count();
+        $totalLogs = count($readLogRepository->findBy(['reader' => $readerId]));
 
 
         /** @var ReadLog $log */
@@ -57,8 +68,14 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/books', name: 'app_dashboard_books')]
-    public function books(BookRepository $bookRepository, Request $request): Response
+    public function books(BookRepository $bookRepository, Request $request, SessionInterface $session): Response
     {
+        $readerId = $session->get('current_reader_id');
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_main');
+        }
+
         // Get pagination parameters
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, min(100, $request->query->getInt('limit', 20))); // Default 20, max 100
@@ -72,8 +89,8 @@ final class DashboardController extends AbstractController
         $offset = ($page - 1) * $limit;
 
         if (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
-            $books = $bookRepository->findBySearchCriteria($titleSearch, $authorSearch, $statusSearch, $limit, $offset);
-            $totalBooks = $bookRepository->countBySearchCriteria($titleSearch, $authorSearch, $statusSearch);
+            $books = $bookRepository->findBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch, $limit, $offset);
+            $totalBooks = $bookRepository->countBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch);
         } else {
             $totalBooks = $bookRepository->count([]);
             $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
@@ -87,6 +104,7 @@ final class DashboardController extends AbstractController
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'books',
             'books' => $books,
+            'readerId' => $readerId,
             'search' => [
                 'title' => $titleSearch,
                 'author' => $authorSearch,
@@ -106,11 +124,17 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/read/log', name: 'app_dashboard_reading_log')]
-    public function readingLog(ReadLogRepository $readLogRepository): Response
+    public function readingLog(ReadLogRepository $readLogRepository, SessionInterface $session): Response
     {
+        $readerId = $session->get('current_reader_id');
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_main');
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'logs',
-            'readLogs' => $readLogRepository->findBy([], ['startDate' => 'ASC']),
+            'readLogs' => $readLogRepository->findBy(['reader' => $readerId], ['startDate' => 'ASC']),
         ]);
     }
 }
