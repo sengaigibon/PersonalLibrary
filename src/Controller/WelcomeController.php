@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Person;
 use App\Repository\PersonRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,8 +12,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class WelcomeController extends AbstractController
 {
     #[Route('/', name: 'app_main')]
-    public function index(PersonRepository $personRepo): Response
+    public function index(PersonRepository $personRepo, SessionInterface $session): Response
     {
+        $session->remove('current_reader_id');
+        $session->remove('current_reader');
+
         $readers = $personRepo->findAll();
         return $this->render('welcome/index.html.twig', [
             'controller_name' => 'WelcomeController',
