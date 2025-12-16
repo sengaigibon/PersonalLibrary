@@ -31,7 +31,7 @@ final class DashboardController extends AbstractController
         $readingNowList = [];
 
         $librarySize = $bookRepository->count();
-        $totalLogs = $readLogRepository->count();
+        $totalLogs = count($readLogRepository->findBy(['reader' => $readerId]));
 
 
         /** @var ReadLog $log */
