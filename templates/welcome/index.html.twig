@@ -8,39 +8,15 @@
         const setReaderUrl = '{{ path('app_set_reader') }}';
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btnEnter').addEventListener('click', function(event) {
-                event.preventDefault();
+                debugger;
 
                 const readerSelect = document.getElementById('reader');
 
                 if (!readerSelect.value) {
                     alert('Select a reader');
                 } else {
-
-                    fetch(setReaderUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
-                            readerId: readerSelect.value
-                        })
-                    }).then(response => {
-                        return response.json().then(data => ({
-                            status: response.status,
-                            data: data
-                        }))
-                    }).then(result => {
-                        if (result.status === 200 && result.data.status) {
-                            console.log('OK');
-                            window.location.href = event.target.href;
-                        } else {
-                            alert('Something went wrong: ' + result.data.message);
-                        }
-                    }).catch(error => {
-                        console.error('Error making request:', error);
-                        alert('Network error occurred');
-                    });
+                    const dashboardUrl = '{{ path('app_dashboard') }}' + '?readerId=' + readerSelect.value;
+                    window.location.href = dashboardUrl;
                 }
             })
         });
@@ -66,6 +42,6 @@
         <option value="{{ reader.id }}">{{ reader.nickname }} ({{ reader.fullName }})</option>
         {% endfor %}
     </select>
-    <a href="{{ path('app_dashboard') }}" id="btnEnter" class="enter-button">Enter to the library</a>
+    <a href="#" id="btnEnter" class="enter-button">Enter to the library</a>
 </div>
 {% endblock %}
