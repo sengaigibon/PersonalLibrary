@@ -26,3 +26,5 @@
 docker
 .editorconfig
 allenv
+
+.vscode
