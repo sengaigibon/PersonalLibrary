@@ -64,8 +64,14 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/books', name: 'app_dashboard_books')]
-    public function books(BookRepository $bookRepository, Request $request): Response
+    public function books(BookRepository $bookRepository, Request $request, SessionInterface $session): Response
     {
+        $readerId = $session->get('current_reader_id');
+        if (!$readerId) {
+            $this->addFlash('error', 'Choose a reader please');
+            return $this->redirectToRoute('app_main');
+        }
+
         // Get pagination parameters
         $page = max(1, $request->query->getInt('page', 1));
         $limit = max(1, min(100, $request->query->getInt('limit', 20))); // Default 20, max 100
@@ -79,8 +85,8 @@ final class DashboardController extends AbstractController
         $offset = ($page - 1) * $limit;
 
         if (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
-            $books = $bookRepository->findBySearchCriteria($titleSearch, $authorSearch, $statusSearch, $limit, $offset);
-            $totalBooks = $bookRepository->countBySearchCriteria($titleSearch, $authorSearch, $statusSearch);
+            $books = $bookRepository->findBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch, $limit, $offset);
+            $totalBooks = $bookRepository->countBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch);
         } else {
             $totalBooks = $bookRepository->count([]);
             $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
@@ -94,6 +100,7 @@ final class DashboardController extends AbstractController
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'books',
             'books' => $books,
+            'readerId' => $readerId,
             'search' => [
                 'title' => $titleSearch,
                 'author' => $authorSearch,
