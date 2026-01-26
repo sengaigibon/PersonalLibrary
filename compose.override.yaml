@@ -2,3 +2,7 @@ services:
   postgres:
     ports:
       - "5432:5432"
+
+  app:
+    environment:
+      APP_ENV: dev
