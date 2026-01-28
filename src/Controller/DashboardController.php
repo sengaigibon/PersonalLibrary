@@ -26,7 +26,7 @@ final class DashboardController extends AbstractController
         // Store readerId in session for future requests
         $session->set('current_reader_id', $readerId);
 
-        $thisYear = new \DateTime()->format('Y');
+        $thisYear = (int) new \DateTime()->format('Y');
         $logs = $readLogRepository->findByYear($thisYear, $readerId);
         $unfinished = $readLogRepository->findUnfinished($readerId) ?: [];
         $books = [];
@@ -53,6 +53,10 @@ final class DashboardController extends AbstractController
         $readingSpeed = $logs ? round($readingTime / count($logs), 2) : 0;
         $totalReadPercentage = $librarySize ? round($totalLogs * 100 / $librarySize, 2) : 0;
 
+        // Books bought recently
+        $boughtBooksCurrentYear = $bookRepository->findBooksBoughtInYear($thisYear);
+        $boughtBooksPreviousYear = $bookRepository->findBooksBoughtInYear($thisYear - 1);
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
             'thisYear' => $thisYear,
@@ -63,7 +67,11 @@ final class DashboardController extends AbstractController
             'librarySize' => $librarySize,
             'totalLogs' => $totalLogs,
             'totalReadPercentage' => $totalReadPercentage,
-            'redingNowList' => $readingNowList
+            'redingNowList' => $readingNowList,
+            'boughtBooksCurrentYear' => $boughtBooksCurrentYear,
+            'boughtBooksPreviousYear' => $boughtBooksPreviousYear,
+            'boughtBooksCurrentYearCount' => count($boughtBooksCurrentYear),
+            'boughtBooksPreviousYearCount' => count($boughtBooksPreviousYear)
         ]);
     }
 
