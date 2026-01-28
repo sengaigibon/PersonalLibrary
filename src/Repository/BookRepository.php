@@ -33,6 +33,18 @@ class BookRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findBooksBoughtInYear(int $year): array
+    {
+        return $this->createQueryBuilder('b')
+            ->where('b.purchaseDate >= :startDate')
+            ->andWhere('b.purchaseDate < :endDate')
+            ->setParameter('startDate', new \DateTime($year . '-01-01'))
+            ->setParameter('endDate', new \DateTime(($year + 1) . '-01-01'))
+            ->orderBy('b.purchaseDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * Count books by search criteria
      */
