@@ -7,9 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
-class Book
+class Book implements JsonSerializable
 {
     public const string STATUS_FINISHED = 'FINISHED';
 
@@ -150,5 +151,18 @@ class Book
     public function setIsReference(bool $isReference): void
     {
         $this->isReference = $isReference;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'author' => $this->author,
+            'isbn' => $this->isbn,
+            'pages' => $this->pages,
+            'purchaseDate' => $this->purchaseDate?->format('Y-m-d'),
+            'isReference' => $this->isReference,
+        ];
     }
 }

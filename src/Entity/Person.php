@@ -6,9 +6,10 @@ use App\Repository\PersonRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
-class Person
+class Person implements JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -89,5 +90,14 @@ class Person
         }
 
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'nickname' => $this->nickname,
+            'fullName' => $this->fullName,
+        ];
     }
 }
