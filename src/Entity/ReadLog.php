@@ -5,9 +5,10 @@ namespace App\Entity;
 use App\Repository\ReadLogRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: ReadLogRepository::class)]
-class ReadLog
+class ReadLog implements JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -109,5 +110,18 @@ class ReadLog
         $this->reader = $reader;
 
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->id,
+            'startDate' => $this->startDate?->format('Y-m-d'),
+            'finishDate' => $this->finishDate?->format('Y-m-d'),
+            'rating' => $this->rating,
+            'notes' => $this->notes,
+            'book' => $this->book?->getId(),
+            'reader' => $this->reader?->getId(),
+        ];
     }
 }
