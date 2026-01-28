@@ -27,7 +27,7 @@
         </ul>
     </div>
     <div class="dashboard-card">
-        <h3>Statistics for {{ thisYear }}</h3>
+        <h3>Statistics for this year ({{ thisYear }})</h3>
         You have read <span class="highlight-stat">{{ booksCount }} books</span>; <br>
         Meaning <span class="highlight-stat">{{ pages }} pages</span> in total; <br>
         At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
@@ -42,6 +42,31 @@
             <li>You have read <span class="highlight-stat">{{ totalLogs }}</span> books of your library</li>
             <li>Which represent <span class="highlight-stat">{{ totalReadPercentage }}%</span> of the total </li>
             <li>You have <span class="highlight-stat">{{ librarySize - totalLogs }}</span> books waiting to be read</li>
+        </ul>
+    </div>
+</div>
+
+<div class="dashboard-content" style="margin-top: 20px">
+    <div class="dashboard-card">
+        <h3>Books bought this year ({{ thisYear }}) </h3>
+        <ul>
+            <li>You have bought {{ boughtBooksCurrentYearCount }} books: </li>
+            <ul>
+                {% for books in boughtBooksCurrentYear %}
+                    <li>{{ books.title }}</li>
+                {% endfor %}
+            </ul>
+        </ul>
+    </div>
+    <div class="dashboard-card">
+        <h3>Books bought this year ({{ thisYear - 1 }}) </h3>
+        <ul>
+            <li>You have bought {{ boughtBooksPreviousYearCount }} books: </li>
+            <ul>
+                {% for books in boughtBooksPreviousYear %}
+                    <li>{{ books.title }}</li>
+                {% endfor %}
+            </ul>
         </ul>
     </div>
 </div>
