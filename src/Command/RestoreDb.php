@@ -2,9 +2,10 @@
 
 namespace App\Command;
 
-use App\Repository\PersonRepository;
-use App\Repository\BookRepository;
-use App\Repository\ReadLogRepository;
+use App\Entity\Person;
+use App\Entity\Book;
+use App\Entity\ReadLog;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,9 +23,7 @@ class RestoreDb extends Command
     private SymfonyStyle $io;
 
     public function __construct(
-        private PersonRepository $personRepo,
-        private BookRepository $bookRepo,
-        private ReadLogRepository $readLogRepo,
+        private EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
@@ -54,11 +53,10 @@ class RestoreDb extends Command
         });
         $latestBackupFile = $files[0];
 
-        // Case 1: Assume only the database exists, verify if the tables are present and if not, run migrations
+        // Verify if the tables are present and if not, run migrations
         if ($this->migrationsDoesNotExists()) {
             $io->writeln('Database appears to be empty. Running migrations to create necessary tables... Hit enter to proceed.'); 
 
-            // doctrine:migrations:mirate command needs to be executed first
             if (!$this->doMigrations()) {
                 $io->error('Failed to run database migrations.');
                 return Command::FAILURE;
@@ -82,7 +80,31 @@ class RestoreDb extends Command
             return Command::FAILURE;
         }
         
-        $io->success('Database restoration completed successfully.');
+        try {
+
+            $this->clearExistingData();
+
+            $this->restorePersons($backup['persons']);
+            $this->restoreBooks($backup['books']);
+            $this->restoreReadLogs($backup['readLogs']);
+            
+            $this->resetSequences();
+
+        } catch (\Exception $e) {
+            $io->error('Failed to restore data: ' . $e->getMessage());
+            return Command::FAILURE;
+        }
+
+        $personCount = count($backup['persons']);
+        $bookCount = count($backup['books']);
+        $readLogCount = count($backup['readLogs']);
+        
+        $io->success(sprintf(
+            'Database restoration completed successfully! Restored %d person(s), %d book(s), and %d read log(s).',
+            $personCount,
+            $bookCount,
+            $readLogCount
+        ));
 
         return Command::SUCCESS;
     }
@@ -121,5 +143,75 @@ class RestoreDb extends Command
         $outputContent = $output->fetch();
 
         return str_contains($outputContent, 'No migration executed yet');
+    }
+
+    private function clearExistingData(): void
+    {
+        $this->entityManager->createQuery('DELETE FROM App\Entity\ReadLog')->execute();
+        $this->entityManager->createQuery('DELETE FROM App\Entity\Book')->execute();
+        $this->entityManager->createQuery('DELETE FROM App\Entity\Person')->execute();
+        $this->entityManager->clear();
+    }
+
+    private function restorePersons(array $personsData): void
+    {
+        $connection = $this->entityManager->getConnection();
+        
+        foreach ($personsData as $personData) {
+            $connection->insert('person', [
+                'id' => $personData['id'],
+                'nickname' => $personData['nickname'],
+                'full_name' => $personData['fullName']
+            ]);
+        }
+    }
+
+    private function restoreBooks(array $booksData): void
+    {
+        $connection = $this->entityManager->getConnection();
+        
+        foreach ($booksData as $bookData) {
+            $connection->insert('book', [
+                'id' => $bookData['id'],
+                'title' => $bookData['title'],
+                'author' => $bookData['author'],
+                'isbn' => $bookData['isbn'],
+                'pages' => $bookData['pages'],
+                'purchase_date' => $bookData['purchaseDate'],
+                'is_reference' => (int) $bookData['isReference']
+            ]);
+        }
+    }
+
+    private function restoreReadLogs(array $readLogsData): void
+    {
+        $connection = $this->entityManager->getConnection();
+        
+        foreach ($readLogsData as $readLogData) {
+            $connection->insert('read_log', [
+                'id' => $readLogData['id'],
+                'start_date' => $readLogData['startDate'],
+                'finish_date' => $readLogData['finishDate'],
+                'rating' => $readLogData['rating'],
+                'notes' => $readLogData['notes'],
+                'book_id' => $readLogData['book'],
+                'reader_id' => $readLogData['reader']
+            ]);
+        }
+    }
+
+    private function resetSequences(): void
+    {
+        $connection = $this->entityManager->getConnection();
+        
+        // Reset sequences for PostgreSQL
+        $connection->executeStatement("SELECT setval('person_id_seq', (SELECT MAX(id) FROM person))");
+        $connection->executeStatement("SELECT setval('book_id_seq', (SELECT MAX(id) FROM book))");
+        $connection->executeStatement("SELECT setval('read_log_id_seq', (SELECT MAX(id) FROM read_log))");
+        
+        // Restore normal ID generation
+        $this->entityManager->getClassMetadata(Person::class)->setIdGeneratorType(\Doctrine\ORM\Mapping\ClassMetadata::GENERATOR_TYPE_IDENTITY);
+        $this->entityManager->getClassMetadata(Book::class)->setIdGeneratorType(\Doctrine\ORM\Mapping\ClassMetadata::GENERATOR_TYPE_IDENTITY);
+        $this->entityManager->getClassMetadata(ReadLog::class)->setIdGeneratorType(\Doctrine\ORM\Mapping\ClassMetadata::GENERATOR_TYPE_IDENTITY);
     }
 }
