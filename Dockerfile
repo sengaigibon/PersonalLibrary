@@ -43,6 +43,10 @@ COPY docker/default.conf /etc/nginx/http.d/default.conf
 # Copy supervisor configuration
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy entrypoint script
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Create supervisor log directory
 RUN mkdir -p /var/log/supervisor
 
@@ -52,6 +56,9 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Expose port
 EXPOSE 8080
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Start supervisor
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
