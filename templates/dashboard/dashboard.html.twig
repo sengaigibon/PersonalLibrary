@@ -21,14 +21,14 @@
     <div class="dashboard-card card-finished">
         <h3>Books read this year ({{ thisYear }})</h3>
         <ul>
-        {% for bookName in booksList %}
+        {% for bookName in booksReadCurrentYear %}
             <li>{{ bookName }}</li>
         {% endfor %}
         </ul>
     </div>
     <div class="dashboard-card">
         <h3>Statistics for this year ({{ thisYear }})</h3>
-        You have read <span class="highlight-stat">{{ booksCount }} books</span>; <br>
+        You have read <span class="highlight-stat">{{ booksReadCurrentYearCount }} books</span>; <br>
         Meaning <span class="highlight-stat">{{ pages }} pages</span> in total; <br>
         At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
     </div>
@@ -50,10 +50,18 @@
     <div class="dashboard-card">
         <h3>New books on the shelf this year ({{ thisYear }}) </h3>
         <ul>
-            <li>You have bought {{ boughtBooksCurrentYearCount }} books: </li>
+            <li>The library has received {{ booksBroughtCurrentYearCount }} books: </li>
             <ul>
-                {% for books in boughtBooksCurrentYear %}
-                    <li>{{ books.title }}</li>
+                {% for book in booksBroughtCurrentYear %}
+                    <li>{{ book.title }}
+                        {% if book.readLogs.count() %}
+                            {% if book.readLogs[0].getFinishDate() == null %}
+                                <span class="highlight-current-status">(reading now)</span>
+                            {% else %}
+                                <span class="highlight-current-status">(done)</span>
+                            {% endif %}
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         </ul>
@@ -61,10 +69,18 @@
     <div class="dashboard-card">
         <h3>Books brought to your shelf last year ({{ thisYear - 1 }}) </h3>
         <ul>
-            <li>You have bought {{ boughtBooksPreviousYearCount }} books: </li>
+            <li>The library has received {{ booksBroughtPreviousYearCount }} books: </li>
             <ul>
-                {% for books in boughtBooksPreviousYear %}
-                    <li>{{ books.title }}</li>
+                {% for book in booksBroughtPreviousYear %}
+                    <li>{{ book.title }}
+                        {% if book.readLogs.count() %}
+                            {% if book.readLogs[0].getFinishDate() == null %}
+                                <span class="highlight-current-status">(reading now)</span>
+                            {% else %}
+                                <span class="highlight-current-status">(done)</span>
+                            {% endif %}
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         </ul>
