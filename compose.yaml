@@ -1,5 +1,27 @@
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      APP_ENV: dev
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/var/www/html:z
+      - ./docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:z
+      - vendor:/var/www/html/vendor
+    networks:
+      - app-network
+    extra_hosts:
+      - "host.containers.internal:host-gateway"
+
   postgres:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
     environment:
@@ -18,25 +40,10 @@ services:
     networks:
       - app-network
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8080"
-    environment:
-      APP_ENV: dev
-      APP_SECRET: ${APP_SECRET}
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - app-network
-
 networks:
   app-network:
     driver: bridge
 
 volumes:
+  vendor:
   db-data: 

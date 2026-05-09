@@ -24,6 +24,11 @@ RUN docker-php-ext-install \
     opcache \
     mbstring
 
+# Install Xdebug (installed but controlled by mounted ini)
+RUN apk add --no-cache $PHPIZE_DEPS linux-headers \
+    && pecl install xdebug \
+    && apk del $PHPIZE_DEPS
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
