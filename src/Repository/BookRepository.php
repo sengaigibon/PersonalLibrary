@@ -89,7 +89,7 @@ class BookRepository extends ServiceEntityRepository
                     $qb->leftJoin('book.readLogs', 'log')
                         ->innerJoin('log.reader', 'reader')
                         ->andWhere('reader.id = :readerId')
-                        ->andWhere('log.finishDate IS NULL OR log.id IS NULL')
+                        ->andWhere('log.finishDate IS NULL')
                         ->setParameter('readerId', $readerId);
                     break;
 
