@@ -20,7 +20,7 @@ services:
     networks:
       - app-network
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "host.containers.internal:host-gateway"
 
   postgres:
     image: postgres:${POSTGRES_VERSION:-16}-alpine

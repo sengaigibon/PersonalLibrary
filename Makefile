@@ -1,7 +1,12 @@
+.DEFAULT_GOAL := help
+
 COMPOSE   = podman-compose
 APP       = $(COMPOSE) exec app
 CONSOLE   = $(APP) php bin/console
 COMPOSER  = $(APP) composer
+
+help: ## Show this help message
+	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 # ── Infrastructure ───────────────────────────────────────────
 
@@ -48,12 +53,12 @@ test-functional: ## Run functional tests only
 
 xdebug-on: ## Enable Xdebug (no rebuild needed)
 	cp docker/xdebug-enabled.ini docker/xdebug.ini
-	$(APP) supervisorctl restart php-fpm
+	$(APP) supervisorctl signal USR2 php-fpm
 	@echo "✅ Xdebug enabled"
 
 xdebug-off: ## Disable Xdebug (no rebuild needed)
 	cp docker/xdebug-disabled.ini docker/xdebug.ini
-	$(APP) supervisorctl restart php-fpm
+	$(APP) supervisorctl signal USR2 php-fpm
 	@echo "✅ Xdebug disabled"
 
 xdebug-toggle: ## Toggle Xdebug on/off
