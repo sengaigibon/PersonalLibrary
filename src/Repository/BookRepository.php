@@ -22,11 +22,11 @@ class BookRepository extends ServiceEntityRepository
      */
     public function findBySearchCriteria(int $readerId, string $title = '', string $author = '', string $status = '', int $limit = 20, int $offset = 0): array
     {
-        $qb = $this->createQueryBuilder('b');
+        $qb = $this->createQueryBuilder('book');
 
         $this->applyConditions($qb, $readerId, $title, $author, $status);
 
-        return $qb->orderBy('b.id', 'ASC')
+        return $qb->orderBy('book.id', 'ASC')
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
@@ -55,8 +55,8 @@ class BookRepository extends ServiceEntityRepository
      */
     public function countBySearchCriteria(int $readerId, string $title = '', string $author = '', string $status = ''): int
     {
-        $qb = $this->createQueryBuilder('b')
-                   ->select('COUNT(b.id)');
+        $qb = $this->createQueryBuilder('book')
+                   ->select('COUNT(DISTINCT(book.id))');
 
         $this->applyConditions($qb, $readerId, $title, $author, $status);
 
@@ -66,28 +66,39 @@ class BookRepository extends ServiceEntityRepository
     public function applyConditions(QueryBuilder $qb, int $readerId, string $title, string $author, string $status): void
     {
         if (!empty($title)) {
-            $qb->andWhere('LOWER(b.title) LIKE LOWER(:title)')
+            $qb->andWhere('LOWER(book.title) LIKE LOWER(:title)')
                 ->setParameter('title', '%' . $title . '%');
         }
 
         if (!empty($author)) {
-            $qb->andWhere('LOWER(b.author) LIKE LOWER(:author)')
+            $qb->andWhere('LOWER(book.author) LIKE LOWER(:author)')
                 ->setParameter('author', '%' . $author . '%');
         }
 
         if (!empty($status)) {
-            if ($status === Book::STATUS_FINISHED) {
-                $qb->innerJoin('b.readLogs', 'rl')
-                    ->innerJoin('rl.reader', 'r')
-                    ->where('r.id = :readerId')
-                    ->andWhere('rl.finishDate IS NOT NULL')
-                    ->setParameter('readerId', $readerId);
-            } else {
-                $qb->leftJoin('b.readLogs', 'rl')
-                    ->innerJoin('rl.reader', 'r')
-                    ->where('r.id = :readerId')
-                    ->andWhere('rl.finishDate IS NULL OR rl.id IS NULL')
-                    ->setParameter('readerId', $readerId);
+            switch ($status) {
+                case Book::STATUS_FINISHED:
+                    $qb->innerJoin('book.readLogs', 'log')
+                        ->innerJoin('log.reader', 'reader')
+                        ->andWhere('reader.id = :readerId')
+                        ->andWhere('log.finishDate IS NOT NULL')
+                        ->setParameter('readerId', $readerId);
+                    break;
+
+                case Book::STATUS_READING:
+                    $qb->leftJoin('book.readLogs', 'log')
+                        ->innerJoin('log.reader', 'reader')
+                        ->andWhere('reader.id = :readerId')
+                        ->andWhere('log.finishDate IS NULL')
+                        ->setParameter('readerId', $readerId);
+                    break;
+
+                case Book::STATUS_UNREAD:
+                default:
+                    $qb->leftJoin('book.readLogs', 'log', 'WITH', 'IDENTITY(log.reader) = :readerId')
+                        ->andWhere('log.id IS NULL')
+                        ->setParameter('readerId', $readerId);
+                    break;
             }
         }
     }

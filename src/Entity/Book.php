@@ -12,6 +12,8 @@ use JsonSerializable;
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book implements JsonSerializable
 {
+    public const string STATUS_UNREAD = 'UNREAD';
+    public const string STATUS_READING = 'READING';
     public const string STATUS_FINISHED = 'FINISHED';
 
     #[ORM\Id]
