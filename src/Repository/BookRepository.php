@@ -56,7 +56,7 @@ class BookRepository extends ServiceEntityRepository
     public function countBySearchCriteria(int $readerId, string $title = '', string $author = '', string $status = ''): int
     {
         $qb = $this->createQueryBuilder('book')
-                   ->select('COUNT(book.id)');
+                   ->select('COUNT(DISTINCT(book.id))');
 
         $this->applyConditions($qb, $readerId, $title, $author, $status);
 
