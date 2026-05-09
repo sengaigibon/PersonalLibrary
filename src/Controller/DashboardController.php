@@ -27,9 +27,9 @@ final class DashboardController extends AbstractController
         $session->set('current_reader_id', $readerId);
 
         $thisYear = (int) new \DateTime()->format('Y');
-        $logs = $readLogRepository->findByYear($thisYear, $readerId);
-        $unfinished = $readLogRepository->findUnfinished($readerId) ?: [];
-        $books = [];
+        $currentYearReadLogs = $readLogRepository->findByYear($thisYear, $readerId);
+        $unfinishedReadLogs = $readLogRepository->findUnfinished($readerId) ?: [];
+        $booksReadCurrentYearCount = [];
         $readingTime = 0;
         $pages = 0;
         $readingNowList = [];
@@ -39,39 +39,39 @@ final class DashboardController extends AbstractController
 
 
         /** @var ReadLog $log */
-        foreach ($logs as $log) {
+        foreach ($currentYearReadLogs as $log) {
             $book = $log->getBook();
-            $books[] = $book->getTitle();
+            $booksReadCurrentYearCount[] = $book->getTitle();
             $readingTime += date_diff($log->getStartDate(), $log->getFinishDate())->days;
             $pages += $book->getPages() ?? 0;
         }
 
-        array_walk($unfinished, function (ReadLog $logItem) use (&$readingNowList) {
+        array_walk($unfinishedReadLogs, function (ReadLog $logItem) use (&$readingNowList) {
             $readingNowList[] = $logItem->getBook()->getTitle();
         });
 
-        $readingSpeed = $logs ? round($readingTime / count($logs), 2) : 0;
+        $readingSpeed = $currentYearReadLogs ? round($readingTime / count($currentYearReadLogs), 2) : 0;
         $totalReadPercentage = $librarySize ? round($totalLogs * 100 / $librarySize, 2) : 0;
 
         // Books bought recently
-        $boughtBooksCurrentYear = $bookRepository->findBooksBoughtInYear($thisYear);
-        $boughtBooksPreviousYear = $bookRepository->findBooksBoughtInYear($thisYear - 1);
+        $booksBroughtCurrentYear = $bookRepository->findBooksBroughtInYear($thisYear, $readerId);
+        $booksBroughtPreviousYear = $bookRepository->findBooksBroughtInYear($thisYear - 1, $readerId);
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
             'thisYear' => $thisYear,
-            'booksList' => $books,
+            'booksReadCurrentYear' => $booksReadCurrentYearCount,
             'avgDays' => $readingSpeed,
-            'booksCount' => count($books),
+            'booksReadCurrentYearCount' => count($booksReadCurrentYearCount),
             'pages' => $pages,
             'librarySize' => $librarySize,
             'totalLogs' => $totalLogs,
             'totalReadPercentage' => $totalReadPercentage,
             'redingNowList' => $readingNowList,
-            'boughtBooksCurrentYear' => $boughtBooksCurrentYear,
-            'boughtBooksPreviousYear' => $boughtBooksPreviousYear,
-            'boughtBooksCurrentYearCount' => count($boughtBooksCurrentYear),
-            'boughtBooksPreviousYearCount' => count($boughtBooksPreviousYear)
+            'booksBroughtCurrentYear' => $booksBroughtCurrentYear,
+            'booksBroughtPreviousYear' => $booksBroughtPreviousYear,
+            'booksBroughtCurrentYearCount' => count($booksBroughtCurrentYear),
+            'booksBroughtPreviousYearCount' => count($booksBroughtPreviousYear)
         ]);
     }
 
