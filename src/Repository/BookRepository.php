@@ -96,9 +96,8 @@ class BookRepository extends ServiceEntityRepository
                 case Book::STATUS_UNREAD:
                 default:
                     $qb->leftJoin('book.readLogs', 'log')
-                        ->leftJoin('log.reader', 'reader')
-                        ->andWhere('reader.id = :readerId OR reader.id IS NULL')
-                        ->andWhere('log.finishDate IS NULL OR log.id IS NULL')
+                        ->leftJoin('log.reader', 'reader', 'WITH', 'IDENTITY(log.reader) = :readerId')
+                        ->andWhere('log.id IS NULL')
                         ->setParameter('readerId', $readerId);
                     break;
             }
