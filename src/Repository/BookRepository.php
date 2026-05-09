@@ -33,14 +33,19 @@ class BookRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findBooksBoughtInYear(int $year): array
+    public function findBooksBroughtInYear(int $year, int $readerId): array
     {
-        return $this->createQueryBuilder('b')
-            ->where('b.purchaseDate >= :startDate')
-            ->andWhere('b.purchaseDate < :endDate')
+        return $this->createQueryBuilder('book')
+            ->leftJoin('book.readLogs', 'log')
+            ->leftJoin('log.reader', 'reader')
+            ->where('book.purchaseDate >= :startDate')
+            ->andWhere('book.purchaseDate < :endDate')
+            ->andWhere('reader.id = :readerId OR reader.id IS NULL')
+            ->andWhere('log.finishDate IS NULL OR log.id IS NULL')
             ->setParameter('startDate', new \DateTime($year . '-01-01'))
             ->setParameter('endDate', new \DateTime(($year + 1) . '-01-01'))
-            ->orderBy('b.purchaseDate', 'ASC')
+            ->setParameter('readerId', $readerId)
+            ->orderBy('book.purchaseDate', 'ASC')
             ->getQuery()
             ->getResult();
     }
