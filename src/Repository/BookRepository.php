@@ -80,7 +80,7 @@ class BookRepository extends ServiceEntityRepository
                 case Book::STATUS_FINISHED:
                     $qb->innerJoin('book.readLogs', 'log')
                         ->innerJoin('log.reader', 'reader')
-                        ->where('reader.id = :readerId')
+                        ->andWhere('reader.id = :readerId')
                         ->andWhere('log.finishDate IS NOT NULL')
                         ->setParameter('readerId', $readerId);
                     break;
@@ -88,7 +88,7 @@ class BookRepository extends ServiceEntityRepository
                 case Book::STATUS_READING:
                     $qb->leftJoin('book.readLogs', 'log')
                         ->innerJoin('log.reader', 'reader')
-                        ->where('reader.id = :readerId')
+                        ->andWhere('reader.id = :readerId')
                         ->andWhere('log.finishDate IS NULL OR log.id IS NULL')
                         ->setParameter('readerId', $readerId);
                     break;
