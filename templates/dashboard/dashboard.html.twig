@@ -39,9 +39,9 @@
         <h3>Total Statistics</h3>
         <ul>
             <li>Your library has a total of <span class="highlight-stat">{{ librarySize }}</span> books </li>
-            <li>You have read <span class="highlight-stat">{{ totalLogs }}</span> books of your library</li>
+            <li>You have read <span class="highlight-stat">{{ totalFinishedBooks }}</span> books of your library</li>
             <li>Which represent <span class="highlight-stat">{{ totalReadPercentage }}%</span> of the total </li>
-            <li>You have <span class="highlight-stat">{{ librarySize - totalLogs }}</span> books waiting to be read</li>
+            <li>You have <span class="highlight-stat">{{ librarySize - totalFinishedBooks }}</span> books waiting to be read</li>
         </ul>
     </div>
 </div>
@@ -85,6 +85,11 @@
                 {% endfor %}
             </ul>
         </ul>
-        So you did read {{ booksBroughtPreviousYearReadCount }} books from this list ({{ booksBroughtPreviousYearReadCount * 100 / booksBroughtPreviousYearCount }}%).
+        So you have read {{ booksBroughtPreviousYearReadCount }} books from this list
+        {% if booksBroughtPreviousYearCount > 0 %}
+            ({{ booksBroughtPreviousYearReadCount * 100 / booksBroughtPreviousYearCount }}%)
+        {% else %}
+            0%
+        {% endif %}.
     </div>
 </div>

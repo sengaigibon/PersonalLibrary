@@ -70,7 +70,7 @@ final class DashboardController extends AbstractController
             'booksReadCurrentYearCount' => count($booksReadCurrentYearCount),
             'pages' => $pages,
             'librarySize' => $librarySize,
-            'totalLogs' => $totalFinished,
+            'totalFinishedBooks' => $totalFinished,
             'totalReadPercentage' => $totalReadPercentage,
             'booksReadingNow' => $booksReadingNow,
             'booksBroughtCurrentYear' => $booksBroughtCurrentYear,
