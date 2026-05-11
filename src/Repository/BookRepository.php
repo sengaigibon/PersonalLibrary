@@ -45,6 +45,7 @@ class BookRepository extends ServiceEntityRepository
             ->setParameter('dateUpperLimit', new \DateTime(($year + 1) . '-01-01'))
             ->setParameter('readerId', $readerId)
             ->orderBy('book.purchaseDate', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }
@@ -54,7 +55,8 @@ class BookRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('book');
         $this->applyConditions($qb, $readerId, '', '', Book::STATUS_READING);
 
-        return $qb->orderBy('book.id', 'ASC')
+        return $qb->distinct()
+            ->orderBy('book.id', 'ASC')
             ->getQuery()
             ->getResult() ?: [];
     }
