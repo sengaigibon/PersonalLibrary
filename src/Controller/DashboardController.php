@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\ReadLog;
+use App\Entity\Book;
 use App\Repository\BookRepository;
 use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,16 +27,15 @@ final class DashboardController extends AbstractController
         // Store readerId in session for future requests
         $session->set('current_reader_id', $readerId);
 
-        $thisYear = (int) new \DateTime()->format('Y');
-        $currentYearReadLogs = $readLogRepository->findByYear($thisYear, $readerId);
-        $unfinishedReadLogs = $readLogRepository->findUnfinished($readerId) ?: [];
+        $currentYear = (int) new \DateTime()->format('Y');
+        $currentYearReadLogs = $readLogRepository->findByYear($currentYear, $readerId);
+        $booksReadingNow = $bookRepository->findReadingNow($readerId);
         $booksReadCurrentYearCount = [];
         $readingTime = 0;
         $pages = 0;
-        $readingNowList = [];
 
         $librarySize = $bookRepository->count();
-        $totalLogs = count($readLogRepository->findBy(['reader' => $readerId]));
+        $totalFinished = $bookRepository->countBySearchCriteria($readerId, '', '', Book::STATUS_FINISHED);
 
 
         /** @var ReadLog $log */
@@ -46,21 +46,16 @@ final class DashboardController extends AbstractController
             $pages += $book->getPages() ?? 0;
         }
 
-        array_walk($unfinishedReadLogs, function (ReadLog $logItem) use (&$readingNowList) {
-            $readingNowList[] = $logItem->getBook()->getTitle();
-        });
-
         $readingSpeed = $currentYearReadLogs ? round($readingTime / count($currentYearReadLogs), 2) : 0;
-        $totalReadPercentage = $librarySize ? round($totalLogs * 100 / $librarySize, 2) : 0;
+        $totalReadPercentage = $librarySize ? round($totalFinished * 100 / $librarySize, 2) : 0;
 
-        // Books bought recently
-        $booksBroughtCurrentYear = $bookRepository->findBooksBroughtInYear($thisYear, $readerId);
-        $booksBroughtPreviousYear = $bookRepository->findBooksBroughtInYear($thisYear - 1, $readerId);
+        $booksBroughtCurrentYear = $bookRepository->findBooksBroughtInYear($currentYear, $readerId);
+        $booksBroughtPreviousYear = $bookRepository->findBooksBroughtInYear($currentYear - 1, $readerId);
 
         $booksBroughtPreviousYearUnread = [];
         $booksBroughtPreviousYearRead = [];
         foreach ($booksBroughtPreviousYear as $book) {
-            if (empty($logs = $book->getReadLogs()->toArray())) {
+            if (empty($book->getReadLogs()->toArray())) {
                 $booksBroughtPreviousYearUnread[] = $book;
             } else {
                 $booksBroughtPreviousYearRead[] = $book;
@@ -69,15 +64,15 @@ final class DashboardController extends AbstractController
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
-            'thisYear' => $thisYear,
+            'currentYear' => $currentYear,
             'booksReadCurrentYear' => $booksReadCurrentYearCount,
             'avgDays' => $readingSpeed,
             'booksReadCurrentYearCount' => count($booksReadCurrentYearCount),
             'pages' => $pages,
             'librarySize' => $librarySize,
-            'totalLogs' => $totalLogs,
+            'totalLogs' => $totalFinished,
             'totalReadPercentage' => $totalReadPercentage,
-            'redingNowList' => $readingNowList,
+            'booksReadingNow' => $booksReadingNow,
             'booksBroughtCurrentYear' => $booksBroughtCurrentYear,
             'booksBroughtPreviousYearUnread' => $booksBroughtPreviousYearUnread,
             'booksBroughtPreviousYearRead' => $booksBroughtPreviousYearRead,
