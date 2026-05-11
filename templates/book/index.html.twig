@@ -198,7 +198,7 @@
                 <!-- Hidden fields to preserve pagination settings -->
                 <input type="hidden" name="limit" value="{{ pagination.items_per_page|default(20) }}">
             </form>
-            {{ pagination.total_items }} book(s) found
+            {{ pagination.total_items }} {{ pagination.total_items == 1 ? 'book' : 'books' }} found
         </div>
 
         <table class="table modern-table">
