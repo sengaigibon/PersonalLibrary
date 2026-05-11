@@ -57,6 +57,16 @@ final class DashboardController extends AbstractController
         $booksBroughtCurrentYear = $bookRepository->findBooksBroughtInYear($thisYear, $readerId);
         $booksBroughtPreviousYear = $bookRepository->findBooksBroughtInYear($thisYear - 1, $readerId);
 
+        $booksBroughtPreviousYearUnread = [];
+        $booksBroughtPreviousYearRead = [];
+        foreach ($booksBroughtPreviousYear as $book) {
+            if (empty($logs = $book->getReadLogs()->toArray())) {
+                $booksBroughtPreviousYearUnread[] = $book;
+            } else {
+                $booksBroughtPreviousYearRead[] = $book;
+            }
+        }
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'dashboard',
             'thisYear' => $thisYear,
@@ -69,9 +79,11 @@ final class DashboardController extends AbstractController
             'totalReadPercentage' => $totalReadPercentage,
             'redingNowList' => $readingNowList,
             'booksBroughtCurrentYear' => $booksBroughtCurrentYear,
-            'booksBroughtPreviousYear' => $booksBroughtPreviousYear,
+            'booksBroughtPreviousYearUnread' => $booksBroughtPreviousYearUnread,
+            'booksBroughtPreviousYearRead' => $booksBroughtPreviousYearRead,
             'booksBroughtCurrentYearCount' => count($booksBroughtCurrentYear),
-            'booksBroughtPreviousYearCount' => count($booksBroughtPreviousYear)
+            'booksBroughtPreviousYearCount' => count($booksBroughtPreviousYear),
+            'booksBroughtPreviousYearReadCount' => count($booksBroughtPreviousYearRead),
         ]);
     }
 
