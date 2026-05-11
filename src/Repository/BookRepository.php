@@ -38,21 +38,29 @@ class BookRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('book')
             ->leftJoin('book.readLogs', 'log')
             ->leftJoin('log.reader', 'reader')
-            ->where('book.purchaseDate >= :startDate')
-            ->andWhere('book.purchaseDate < :endDate')
+            ->where('book.purchaseDate >= :dateLowerLimit')
+            ->andWhere('book.purchaseDate < :dateUpperLimit')
             ->andWhere('reader.id = :readerId OR reader.id IS NULL')
-            ->andWhere('log.finishDate IS NULL OR log.id IS NULL')
-            ->setParameter('startDate', new \DateTime($year . '-01-01'))
-            ->setParameter('endDate', new \DateTime(($year + 1) . '-01-01'))
+            ->setParameter('dateLowerLimit', new \DateTime($year . '-01-01'))
+            ->setParameter('dateUpperLimit', new \DateTime(($year + 1) . '-01-01'))
             ->setParameter('readerId', $readerId)
             ->orderBy('book.purchaseDate', 'ASC')
+            ->distinct()
             ->getQuery()
             ->getResult();
     }
 
-    /**
-     * Count books by search criteria
-     */
+    public function findReadingNow(int $readerId): array
+    {
+        $qb = $this->createQueryBuilder('book');
+        $this->applyConditions($qb, $readerId, '', '', Book::STATUS_READING);
+
+        return $qb->distinct()
+            ->orderBy('book.id', 'ASC')
+            ->getQuery()
+            ->getResult() ?: [];
+    }
+
     public function countBySearchCriteria(int $readerId, string $title = '', string $author = '', string $status = ''): int
     {
         $qb = $this->createQueryBuilder('book')

@@ -10,8 +10,8 @@
     <div class="dashboard-card card-reading">
         <h3>Reading now:</h3>
         <ul>
-            {% for bookName in redingNowList %}
-                <li>{{ bookName }}</li>
+            {% for book in booksReadingNow %}
+                <li>{{ book.title }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -19,7 +19,7 @@
 
 <div class="dashboard-content" style="margin-top: 20px">
     <div class="dashboard-card card-finished">
-        <h3>Books read this year ({{ thisYear }})</h3>
+        <h3>Books read this year ({{ currentYear }})</h3>
         <ul>
         {% for bookName in booksReadCurrentYear %}
             <li>{{ bookName }}</li>
@@ -27,7 +27,7 @@
         </ul>
     </div>
     <div class="dashboard-card">
-        <h3>Statistics for this year ({{ thisYear }})</h3>
+        <h3>Statistics for this year ({{ currentYear }})</h3>
         You have read <span class="highlight-stat">{{ booksReadCurrentYearCount }} books</span>; <br>
         Meaning <span class="highlight-stat">{{ pages }} pages</span> in total; <br>
         At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
@@ -39,16 +39,16 @@
         <h3>Total Statistics</h3>
         <ul>
             <li>Your library has a total of <span class="highlight-stat">{{ librarySize }}</span> books </li>
-            <li>You have read <span class="highlight-stat">{{ totalLogs }}</span> books of your library</li>
+            <li>You have read <span class="highlight-stat">{{ totalFinishedBooks }}</span> books of your library</li>
             <li>Which represent <span class="highlight-stat">{{ totalReadPercentage }}%</span> of the total </li>
-            <li>You have <span class="highlight-stat">{{ librarySize - totalLogs }}</span> books waiting to be read</li>
+            <li>You have <span class="highlight-stat">{{ librarySize - totalFinishedBooks }}</span> books waiting to be read</li>
         </ul>
     </div>
 </div>
 
 <div class="dashboard-content" style="margin-top: 20px">
     <div class="dashboard-card">
-        <h3>New books on the shelf this year ({{ thisYear }}) </h3>
+        <h3>New books on the shelf this year ({{ currentYear }}) </h3>
         <ul>
             <li>The library has received {{ booksBroughtCurrentYearCount }} books: </li>
             <ul>
@@ -67,22 +67,31 @@
         </ul>
     </div>
     <div class="dashboard-card">
-        <h3>Books brought to your shelf last year ({{ thisYear - 1 }}) </h3>
+        <h3>Books brought to your shelf last year ({{ currentYear - 1 }}) </h3>
         <ul>
             <li>The library has received {{ booksBroughtPreviousYearCount }} books: </li>
             <ul>
-                {% for book in booksBroughtPreviousYear %}
+                {% set totalPreviousYearReadCount = 0 %}
+                {% for book in booksBroughtPreviousYearRead %}
                     <li>{{ book.title }}
-                        {% if book.readLogs.count() %}
-                            {% if book.readLogs[0].getFinishDate() == null %}
-                                <span class="highlight-current-status">(reading now)</span>
-                            {% else %}
-                                <span class="highlight-current-status">(done)</span>
-                            {% endif %}
+                        {% if book.readLogs[0].getFinishDate() == null %}
+                            <span class="highlight-current-status">(reading now)</span>
+                        {% else %}
+                            {% set totalPreviousYearReadCount =  totalPreviousYearReadCount + 1 %}
+                            <span class="highlight-current-status">(done)</span>
                         {% endif %}
                     </li>
                 {% endfor %}
+                {% for book in booksBroughtPreviousYearUnread %}
+                    <li>{{ book.title }} <span class="highlight-current-status"></span> </li>
+                {% endfor %}
             </ul>
         </ul>
+        So you have read {{ totalPreviousYearReadCount }} books from this list
+        {% if booksBroughtPreviousYearCount > 0 %}
+            ({{ totalPreviousYearReadCount * 100 / booksBroughtPreviousYearCount }}%)
+        {% else %}
+            0%
+        {% endif %}.
     </div>
 </div>

@@ -29,14 +29,4 @@ class ReadLogRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-    public function findUnfinished(int $readerId)
-    {
-        return $this->createQueryBuilder('r')
-            ->innerJoin('r.reader', 'p')
-            ->where('r.finishDate is null')
-            ->andWhere('p.id = :readerId')
-            ->setParameter('readerId', $readerId)
-            ->getQuery()->getResult();
-    }
 }
