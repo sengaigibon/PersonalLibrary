@@ -72,18 +72,16 @@
             <li>The library has received {{ booksBroughtPreviousYearCount }} books: </li>
             <ul>
                 {% for book in booksBroughtPreviousYearRead %}
-                    <li>{{ book.title }} <span class="highlight-current-status">(done)</span></li>
-                {% endfor %}
-                {% for book in booksBroughtPreviousYearUnread %}
                     <li>{{ book.title }}
-                        {% if book.readLogs.count() %}
-                            {% if book.readLogs[0].getFinishDate() == null %}
-                                <span class="highlight-current-status">(reading now)</span>
-                            {% else %}
-                                <span class="highlight-current-status"></span>
-                            {% endif %}
+                        {% if book.readLogs[0].getFinishDate() == null %}
+                            <span class="highlight-current-status">(reading now)</span>
+                        {% else %}
+                            <span class="highlight-current-status">(done)</span>
                         {% endif %}
                     </li>
+                {% endfor %}
+                {% for book in booksBroughtPreviousYearUnread %}
+                    <li>{{ book.title }} <span class="highlight-current-status"></span> </li>
                 {% endfor %}
             </ul>
         </ul>
