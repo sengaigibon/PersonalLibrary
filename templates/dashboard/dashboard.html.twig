@@ -71,11 +71,13 @@
         <ul>
             <li>The library has received {{ booksBroughtPreviousYearCount }} books: </li>
             <ul>
+                {% set totalPreviousYearReadCount = 0 %}
                 {% for book in booksBroughtPreviousYearRead %}
                     <li>{{ book.title }}
                         {% if book.readLogs[0].getFinishDate() == null %}
                             <span class="highlight-current-status">(reading now)</span>
                         {% else %}
+                            {% set totalPreviousYearReadCount =  totalPreviousYearReadCount + 1 %}
                             <span class="highlight-current-status">(done)</span>
                         {% endif %}
                     </li>
@@ -85,9 +87,9 @@
                 {% endfor %}
             </ul>
         </ul>
-        So you have read {{ booksBroughtPreviousYearReadCount }} books from this list
+        So you have read {{ totalPreviousYearReadCount }} books from this list
         {% if booksBroughtPreviousYearCount > 0 %}
-            ({{ booksBroughtPreviousYearReadCount * 100 / booksBroughtPreviousYearCount }}%)
+            ({{ totalPreviousYearReadCount * 100 / booksBroughtPreviousYearCount }}%)
         {% else %}
             0%
         {% endif %}.
