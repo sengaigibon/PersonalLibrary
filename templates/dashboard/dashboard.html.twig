@@ -10,8 +10,8 @@
     <div class="dashboard-card card-reading">
         <h3>Reading now:</h3>
         <ul>
-            {% for bookName in redingNowList %}
-                <li>{{ bookName }}</li>
+            {% for book in booksReadingNow %}
+                <li>{{ book.title }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -19,7 +19,7 @@
 
 <div class="dashboard-content" style="margin-top: 20px">
     <div class="dashboard-card card-finished">
-        <h3>Books read this year ({{ thisYear }})</h3>
+        <h3>Books read this year ({{ currentYear }})</h3>
         <ul>
         {% for bookName in booksReadCurrentYear %}
             <li>{{ bookName }}</li>
@@ -27,7 +27,7 @@
         </ul>
     </div>
     <div class="dashboard-card">
-        <h3>Statistics for this year ({{ thisYear }})</h3>
+        <h3>Statistics for this year ({{ currentYear }})</h3>
         You have read <span class="highlight-stat">{{ booksReadCurrentYearCount }} books</span>; <br>
         Meaning <span class="highlight-stat">{{ pages }} pages</span> in total; <br>
         At an average reading speed of <span class="highlight-stat">{{ avgDays }} days</span> per book; <br>
@@ -48,7 +48,7 @@
 
 <div class="dashboard-content" style="margin-top: 20px">
     <div class="dashboard-card">
-        <h3>New books on the shelf this year ({{ thisYear }}) </h3>
+        <h3>New books on the shelf this year ({{ currentYear }}) </h3>
         <ul>
             <li>The library has received {{ booksBroughtCurrentYearCount }} books: </li>
             <ul>
@@ -67,7 +67,7 @@
         </ul>
     </div>
     <div class="dashboard-card">
-        <h3>Books brought to your shelf last year ({{ thisYear - 1 }}) </h3>
+        <h3>Books brought to your shelf last year ({{ currentYear - 1 }}) </h3>
         <ul>
             <li>The library has received {{ booksBroughtPreviousYearCount }} books: </li>
             <ul>
