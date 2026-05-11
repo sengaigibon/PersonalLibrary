@@ -49,9 +49,16 @@ class BookRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Count books by search criteria
-     */
+    public function findReadingNow(int $readerId): array
+    {
+        $qb = $this->createQueryBuilder('book');
+        $this->applyConditions($qb, $readerId, '', '', Book::STATUS_READING);
+
+        return $qb->orderBy('book.id', 'ASC')
+            ->getQuery()
+            ->getResult() ?: [];
+    }
+
     public function countBySearchCriteria(int $readerId, string $title = '', string $author = '', string $status = ''): int
     {
         $qb = $this->createQueryBuilder('book')
