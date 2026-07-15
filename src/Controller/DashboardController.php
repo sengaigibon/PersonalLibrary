@@ -91,19 +91,20 @@ final class DashboardController extends AbstractController
             return $this->redirectToRoute('app_main');
         }
 
-        // Get pagination parameters
         $page = max(1, $request->query->getInt('page', 1));
-        $limit = max(1, min(100, $request->query->getInt('limit', 20))); // Default 20, max 100
+        $limit = max(1, min(100, $request->query->getInt('limit', 20)));
 
-        // Get search parameters
+        $idSearch = $request->query->get('id', '');
         $titleSearch = $request->query->get('title', '');
         $authorSearch = $request->query->get('author', '');
         $statusSearch = $request->query->get('status', '');
 
-        // Calculate offset
         $offset = ($page - 1) * $limit;
 
-        if (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
+        if (!empty($idSearch)) {
+            $totalBooks = $bookRepository->count(['id' => $idSearch]);
+            $books = $bookRepository->findBy(['id' => $idSearch], ['id' => 'ASC'], $limit, $offset);
+        } elseif (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
             $books = $bookRepository->findBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch, $limit, $offset);
             $totalBooks = $bookRepository->countBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch);
         } else {
@@ -111,7 +112,6 @@ final class DashboardController extends AbstractController
             $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
         }
 
-        // Calculate pagination info
         $totalPages = (int) ceil($totalBooks / $limit);
         $hasNext = $page < $totalPages;
         $hasPrev = $page > 1;
