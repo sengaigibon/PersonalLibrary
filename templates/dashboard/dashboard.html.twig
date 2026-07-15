@@ -11,7 +11,7 @@
         <h3>Reading now:</h3>
         <ul>
             {% for book in booksReadingNow %}
-                <li>{{ book.title }}</li>
+                <li>{{ book.title }} <a href="{{ path('App\\Controller\\DashboardController::books', parameters = {id: book.id}) }}">(open in Library)</a></li>
             {% endfor %}
         </ul>
     </div>
