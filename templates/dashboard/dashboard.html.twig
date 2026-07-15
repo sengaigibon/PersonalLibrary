@@ -89,7 +89,7 @@
         </ul>
         So you have read {{ totalPreviousYearReadCount }} books from this list
         {% if booksBroughtPreviousYearCount > 0 %}
-            ({{ totalPreviousYearReadCount * 100 / booksBroughtPreviousYearCount }}%)
+            ({{ (totalPreviousYearReadCount * 100 / booksBroughtPreviousYearCount)|round(1, 'floor') }}%)
         {% else %}
             0%
         {% endif %}.
