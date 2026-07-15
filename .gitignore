@@ -27,3 +27,5 @@
 allenv
 
 .vscode
+
+/db/data
