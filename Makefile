@@ -10,19 +10,42 @@ help: ## Show this help message
 
 # ── Infrastructure ───────────────────────────────────────────
 
-up: ## Start and build containers (detached)
+up: ## Start containers (detached)
 	$(COMPOSE) up -d
 
-up-build: ## Start and build containers (detached)
+up-build: ## Build images and start containers (detached)
 	$(COMPOSE) up -d --build
 
 down: ## Stop and remove containers
 	$(COMPOSE) down
 
+down-volumes: ## Stop and remove containers and named volumes (vendor); ./db/data is kept
+	$(COMPOSE) down -v
+
+build-app: ## Build the app image
+	$(COMPOSE) build app
+
+build-app-no-cache: ## Build the app image without cached layers
+	$(COMPOSE) build --no-cache app
+
+up-app: ## Start (or recreate) only the app container (detached)
+	$(COMPOSE) up -d app
+
 restart: down up ## Restart all containers
 
 shell: ## Open a shell inside the app container
 	$(APP) sh
+
+# ── Dependencies & Database ──────────────────────────────────
+
+composer-install: ## Install Composer dependencies inside the app container
+	$(COMPOSER) install
+
+migrate: ## Run Doctrine migrations inside the app container
+	$(CONSOLE) doctrine:migrations:migrate
+
+create-reader: ## Create a new reader (asks for nickname and full name)
+	$(CONSOLE) app:reader:create
 
 # ── Symfony Console ───────────────────────────────────────────
 

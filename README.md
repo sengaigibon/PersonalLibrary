@@ -39,7 +39,7 @@ A modern web application for tracking your reading journey, managing your book l
 ## 🛠️ Tech Stack
 
 ### Backend
-- **PHP 8.3+**: Modern PHP with latest features
+- **PHP 8.4+**: Modern PHP with latest features
 - **Symfony 7.x**: Robust PHP framework for web applications
 - **Doctrine ORM**: Database abstraction and object-relational mapping
 - **PostgreSQL**: Primary database for data persistence
@@ -90,44 +90,88 @@ ReadingLog/
 ## 🚀 Installation
 
 ### Prerequisites
-- PHP 8.3 or higher
-- Composer
-- PostgreSQL
-- Node.js (for asset building)
 
-### Setup Steps
+**With containers (recommended):**
+- [Podman](https://podman.io/) + `podman-compose`, or Docker + Docker Compose
+- `make`
+
+**Without containers (local setup):**
+- PHP 8.4 or higher (with the `pdo_pgsql`, `intl`, `zip` and `mbstring` extensions)
+- Composer
+- PostgreSQL 16, installed and running
+- Symfony CLI (optional, for `symfony server:start`)
+
+### Setup Steps (containers)
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd ReadingLog
+   git clone git@github.com:sengaigibon/PersonalLibrary.git
+   cd PersonalLibrary
    ```
 
-2. **Install dependencies**
+2. **Configure the environment**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and set at least:
+   - `APP_SECRET`: generate one with `openssl rand -hex 16`
+   - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: the database credentials (avoid `'` in the password)
+
+   You don't need to change `DATABASE_URL` for the containers; `compose.yaml` builds it from the `POSTGRES_*` values.  
+
+
+3. **Build and start the containers**
+   ```bash
+   make up-build
+   ```
+   This builds the `postgres` and `app` images and starts them. On the first start, the `postgres` container creates the database user and the database from the `POSTGRES_*` values, and stores the data in `./db/data`. The app waits until the database is healthy. Check that both containers are `Up` with `podman-compose ps`.
+
+
+4. **Create the database schema**
+   ```bash
+   make migrate
+   ```
+   The database itself already exists (step 3), so there is no `doctrine:database:create` step here.
+
+
+5. **Create your first reader**
+   ```bash
+   make create-reader
+   ```
+   The command asks for a nickname and a full name. You can also pass them directly:
+   ```bash
+   podman-compose exec app php bin/console app:reader:create jdoe "John Doe"
+   ```
+   The app can't be used without a reader: the welcome page only lets you choose an existing reader. Run the command again to add more readers.
+
+6. **Access the application**
+   - Open http://localhost:8081
+   - Choose your reader and click "Enter to the library"
+
+### Setup Steps (without containers)
+
+1. Clone the repository (as above) and install the dependencies:
    ```bash
    composer install
    ```
-
-3. **Configure environment**
+2. Configure the environment:
    ```bash
-   cp .env .env.local
-   # Edit .env.local with your database configuration
+   cp .env.example .env
    ```
-
-4. **Setup database**
+   Set `APP_SECRET`, and set `DATABASE_URL` to your local PostgreSQL server (user, password, host, port and database name).
+3. Create the database and the schema (PostgreSQL must be running):
    ```bash
    php bin/console doctrine:database:create
    php bin/console doctrine:migrations:migrate
    ```
-
-5. **Start development server**
+4. Create your first reader:
+   ```bash
+   php bin/console app:reader:create
+   ```
+5. Start the development server and open http://localhost:8000:
    ```bash
    symfony server:start
    ```
-
-6. **Access the application**
-   - Open http://localhost:8000
-   - Navigate to `/dashboard` for the main application
 
 ## 📱 Usage
 
@@ -163,6 +207,56 @@ php bin/console doctrine:migrations:migrate
 ```bash
 php bin/console cache:clear
 ```
+
+### Rebuilding the Containers After Changes
+
+The `make` targets run `podman-compose` under the hood. With Docker, override it per command, e.g. `make up-build COMPOSE="docker compose"`, or change `COMPOSE` at the top of the `Makefile`.
+
+The project directory is bind-mounted into the `app` container (`.:/var/www/html`), so **most code changes don't need a rebuild**. What you need depends on what you changed:
+
+| What changed | What to do |
+|---|---|
+| PHP code, Twig templates, CSS/JS, config in `config/` | Nothing, just reload the page (if it doesn't show up, run `make cache-clear`) |
+| `composer.json` / `composer.lock` | `make composer-install` (see below) |
+| New migration in `migrations/` | `make migrate` |
+| `docker/app/Dockerfile`, `docker/nginx.conf`, `docker/default.conf`, `docker/supervisord.conf`, `docker/entrypoint.sh` | Rebuild the image |
+| `docker/postgres/*` | Rebuild the image |
+| `compose.yaml` / `compose.override.yaml` | Recreate the containers: `make down && make up` |
+
+**Rebuild the images and restart the containers:**
+```bash
+make down
+make up-build          # = podman-compose up -d --build
+```
+
+To rebuild a single service, or force a clean build without cached layers:
+```bash
+make build-app              # only the app image
+make build-app-no-cache     # ignore cached layers
+make up-app                 # start/recreate only the app container
+```
+
+**Composer dependencies:** `vendor/` is kept in a named volume (`vendor`), which is **not** refreshed when the image is rebuilt. After changing dependencies, install them in the running container:
+```bash
+make composer-install
+```
+Or remove the volume, so the next start fills it from the freshly built image:
+```bash
+make down-volumes   # removes named volumes (vendor); the database in ./db/data is a bind mount and is kept
+make up-build
+```
+
+**Database migrations:**
+```bash
+make migrate
+```
+
+**Check that everything is running:**
+```bash
+podman-compose ps
+podman-compose logs -f app
+```
+The app is served at http://localhost:8081.
 
 ## 🎯 API Endpoints
 
