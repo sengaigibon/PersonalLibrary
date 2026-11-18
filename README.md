@@ -10,6 +10,7 @@ A modern web application for tracking your reading journey, managing your book l
 - **Book Library**: View all books in a modern, responsive table with search and filtering
 - **Book Details**: Detailed view of each book with all metadata
 - **Edit & Delete**: Full CRUD operations for book management
+- **Separate Libraries**: Each reader has their own library; books and reading logs are only visible to their owner (readers are chosen on the welcome page, there is no login)
 
 ### 📊 Reading Progress Tracking
 - **Start Reading**: One-click to begin tracking a reading session
@@ -218,8 +219,8 @@ make test-functional    # HTTP/controller tests (tests/Functional)
 Run `make test-db` once after setting up the project, and again after adding a migration.
 
 The fixtures live in `src/DataFixtures/` and use fixed values so tests can assert exact results:
-- **Readers**: `alice` (main reader), `bob` (used to check that data is scoped per reader) and `carol` (no reading activity)
-- **Books**: 10 books covering every status (unread, reading, finished, finished twice), one reference book, one without a page count, and books bought in 2024 and 2025
+- **Readers**: `alice` (owns most books), `bob` (a small library, used to check that libraries are separate) and `carol` (empty library)
+- **Books**: 10 books, each owned by one reader, covering every status (unread, reading, finished, finished twice), one reference book, one without a page count, and books bought in 2024 and 2025
 - **Read logs**: 8 logs between 2024 and 2025, including a book started and finished on the same day
 
 The dashboard depends on the current year, so dashboard tests should fix the date to 2025 with `ClockSensitiveTrait::mockTime()` (see `ReadLogFixtures.php` for the expected 2025 statistics).
