@@ -3,8 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Book;
-use App\Entity\Person;
 use App\Entity\ReadLog;
+use App\Repository\BookRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -24,12 +24,10 @@ class ReadLogType extends AbstractType
                 'choice_label' => 'title',
                 'placeholder' => 'Choose a book',
                 'required' => true,
-            ])
-            ->add('reader', EntityType::class, [
-                'class' => Person::class,
-                'choice_label' => 'fullname',
-                'placeholder' => 'Choose a reader',
-                'required' => true,
+                'query_builder' => fn (BookRepository $repository) => $repository->createQueryBuilder('book')
+                    ->where('book.owner = :owner')
+                    ->setParameter('owner', $options['owner_id'])
+                    ->orderBy('book.title', 'ASC'),
             ])
         ;
     }
@@ -39,5 +37,7 @@ class ReadLogType extends AbstractType
         $resolver->setDefaults([
             'data_class' => ReadLog::class,
         ]);
+        $resolver->setRequired('owner_id');
+        $resolver->setAllowedTypes('owner_id', 'int');
     }
 }

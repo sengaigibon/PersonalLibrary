@@ -7,6 +7,7 @@ use App\Entity\Book;
 use App\Repository\BookRepository;
 use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -15,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session, Request $request): Response
+    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session, Request $request, ClockInterface $clock): Response
     {
         $readerId = $request->query->get('readerId') ?: $session->get('current_reader_id');
     
@@ -27,14 +28,14 @@ final class DashboardController extends AbstractController
         // Store readerId in session for future requests
         $session->set('current_reader_id', $readerId);
 
-        $currentYear = (int) new \DateTime()->format('Y');
+        $currentYear = (int) $clock->now()->format('Y');
         $currentYearReadLogs = $readLogRepository->findByYear($currentYear, $readerId);
         $booksReadingNow = $bookRepository->findReadingNow($readerId);
         $booksReadCurrentYearCount = [];
         $readingTime = 0;
         $pages = 0;
 
-        $librarySize = $bookRepository->count();
+        $librarySize = $bookRepository->count(['owner' => $readerId]);
         $totalFinished = $bookRepository->countBySearchCriteria($readerId, '', '', Book::STATUS_FINISHED);
 
 
@@ -102,14 +103,14 @@ final class DashboardController extends AbstractController
         $offset = ($page - 1) * $limit;
 
         if (!empty($idSearch)) {
-            $totalBooks = $bookRepository->count(['id' => $idSearch]);
-            $books = $bookRepository->findBy(['id' => $idSearch], ['id' => 'ASC'], $limit, $offset);
+            $totalBooks = $bookRepository->count(['id' => $idSearch, 'owner' => $readerId]);
+            $books = $bookRepository->findBy(['id' => $idSearch, 'owner' => $readerId], ['id' => 'ASC'], $limit, $offset);
         } elseif (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
             $books = $bookRepository->findBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch, $limit, $offset);
             $totalBooks = $bookRepository->countBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch);
         } else {
-            $totalBooks = $bookRepository->count([]);
-            $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
+            $totalBooks = $bookRepository->count(['owner' => $readerId]);
+            $books = $bookRepository->findBy(['owner' => $readerId], ['id' => 'ASC'], $limit, $offset);
         }
 
         $totalPages = (int) ceil($totalBooks / $limit);

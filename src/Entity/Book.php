@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use JsonSerializable;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
@@ -22,15 +23,21 @@ class Book implements JsonSerializable
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $author = null;
 
     #[ORM\Column(length: 13, nullable: true)]
+    #[Assert\Length(max: 13)]
     private ?string $isbn = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive]
     private ?int $pages = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -43,7 +50,12 @@ class Book implements JsonSerializable
      * @var Collection<int, ReadLog>
      */
     #[ORM\OneToMany(targetEntity: ReadLog::class, mappedBy: 'book')]
+    #[ORM\OrderBy(['startDate' => 'ASC', 'id' => 'ASC'])]
     private Collection $readLogs;
+
+    #[ORM\ManyToOne(inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Person $owner = null;
 
     public function __construct()
     {
@@ -145,6 +157,23 @@ class Book implements JsonSerializable
         return $this;
     }
 
+    public function getOwner(): ?Person
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?Person $owner): static
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    public function isOwnedBy(?int $personId): bool
+    {
+        return $personId !== null && $this->owner?->getId() === $personId;
+    }
+
     public function isReference(): bool
     {
         return $this->isReference;
@@ -165,6 +194,7 @@ class Book implements JsonSerializable
             'pages' => $this->pages,
             'purchaseDate' => $this->purchaseDate?->format('Y-m-d'),
             'isReference' => $this->isReference,
+            'owner' => $this->owner?->getId(),
         ];
     }
 }

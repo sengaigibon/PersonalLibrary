@@ -36,16 +36,14 @@ class BookRepository extends ServiceEntityRepository
     public function findBooksBroughtInYear(int $year, int $readerId): array
     {
         return $this->createQueryBuilder('book')
-            ->leftJoin('book.readLogs', 'log')
-            ->leftJoin('log.reader', 'reader')
-            ->where('book.purchaseDate >= :dateLowerLimit')
+            ->where('book.owner = :readerId')
+            ->andWhere('book.purchaseDate >= :dateLowerLimit')
             ->andWhere('book.purchaseDate < :dateUpperLimit')
-            ->andWhere('reader.id = :readerId OR reader.id IS NULL')
             ->setParameter('dateLowerLimit', new \DateTime($year . '-01-01'))
             ->setParameter('dateUpperLimit', new \DateTime(($year + 1) . '-01-01'))
             ->setParameter('readerId', $readerId)
             ->orderBy('book.purchaseDate', 'ASC')
-            ->distinct()
+            ->addOrderBy('book.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -73,6 +71,9 @@ class BookRepository extends ServiceEntityRepository
 
     public function applyConditions(QueryBuilder $qb, int $readerId, string $title, string $author, string $status): void
     {
+        $qb->andWhere('book.owner = :readerId')
+            ->setParameter('readerId', $readerId);
+
         if (!empty($title)) {
             $qb->andWhere('LOWER(book.title) LIKE LOWER(:title)')
                 ->setParameter('title', '%' . $title . '%');

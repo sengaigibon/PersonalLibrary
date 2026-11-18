@@ -10,6 +10,7 @@ A modern web application for tracking your reading journey, managing your book l
 - **Book Library**: View all books in a modern, responsive table with search and filtering
 - **Book Details**: Detailed view of each book with all metadata
 - **Edit & Delete**: Full CRUD operations for book management
+- **Separate Libraries**: Each reader has their own library; books and reading logs are only visible to their owner (readers are chosen on the welcome page, there is no login)
 
 ### 📊 Reading Progress Tracking
 - **Start Reading**: One-click to begin tracking a reading session
@@ -140,7 +141,7 @@ ReadingLog/
    ```
    The command asks for a nickname and a full name. You can also pass them directly:
    ```bash
-   podman-compose exec app php bin/console app:reader:create jdoe "John Doe"
+   podman-compose exec -u www-data app php bin/console app:reader:create jdoe "John Doe"
    ```
    The app can't be used without a reader: the welcome page only lets you choose an existing reader. Run the command again to add more readers.
 
@@ -203,6 +204,33 @@ php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
 
+### Testing
+
+Integration tests use a separate database: the main database name with a `_test` suffix (e.g. `app_test`), configured in `config/packages/doctrine.yaml`. Your development data is never touched.
+
+```bash
+make test-db         # (re)create the test database, run migrations and load the fixtures
+make test-fixtures   # reload the fixtures only (purges the test database first)
+make test               # run all tests
+make test-integration   # repository tests (tests/Integration)
+make test-functional    # HTTP/controller tests (tests/Functional)
+```
+
+Run `make test-db` once after setting up the project, and again after adding a migration.
+
+The fixtures live in `src/DataFixtures/` and use fixed values so tests can assert exact results:
+- **Readers**: `alice` (owns most books), `bob` (a small library, used to check that libraries are separate) and `carol` (empty library)
+- **Books**: 10 books, each owned by one reader, covering every status (unread, reading, finished, finished twice), one reference book, one without a page count, and books bought in 2024 and 2025
+- **Read logs**: 8 logs between 2024 and 2025, including a book started and finished on the same day
+
+The dashboard depends on the current year, so dashboard tests should fix the date to 2025 with `ClockSensitiveTrait::mockTime()` (see `ReadLogFixtures.php` for the expected 2025 statistics).
+
+The status of each book per reader is documented in `BookFixtures.php`. Each fixture has a reference constant (e.g. `BookFixtures::DUNE`) that you can use to identify it in tests.
+
+Integration tests live in `tests/Integration/` and extend `DatabaseTestCase`. It reloads the fixtures before each test class, provides `$this->id(BookFixtures::DUNE)` to get a fixture's database id, and `inRolledBackTransaction()` for tests that add data. It refuses to run against any database that isn't a `_test` database.
+
+Functional tests live in `tests/Functional/` and extend `ApplicationTestCase`. They send real HTTP requests through routing, controllers, forms and Twig. Because they change data, the fixtures are reloaded before every test. `chooseReader()` picks the current reader the same way the welcome page does. External APIs are replaced with `MockHttpClient`, so tests never call OpenLibrary.
+
 ### Clearing Cache
 ```bash
 php bin/console cache:clear
@@ -254,8 +282,13 @@ make migrate
 **Check that everything is running:**
 ```bash
 podman-compose ps
-podman-compose logs -f app
+podman-compose logs -f app   # nginx / php-fpm output
+make logs                    # Symfony's dev.log
 ```
+
+**Cache, logs and file ownership:** inside the container, Symfony writes its cache and logs to `/tmp/symfony` (`APP_CACHE_DIR` and `APP_LOG_DIR` in `compose.yaml`), not to the project's `./var`. The host and the container each have their own cache, so `php bin/console` works on the host too and `./var` stays owned by you.
+
+When you run PHP commands in the container yourself, run them as `www-data` (the same user as php-fpm): `podman-compose exec -u www-data app php bin/console ...`. The `make` targets already do this. `make shell` opens a shell as `www-data`; use `make shell-root` only for system tasks.
 The app is served at http://localhost:8081.
 
 ## 🎯 API Endpoints

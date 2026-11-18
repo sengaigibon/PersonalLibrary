@@ -178,7 +178,8 @@ class RestoreDb extends Command
                 'isbn' => $bookData['isbn'],
                 'pages' => $bookData['pages'],
                 'purchase_date' => $bookData['purchaseDate'],
-                'is_reference' => (int) $bookData['isReference']
+                'is_reference' => (int) $bookData['isReference'],
+                'owner_id' => $bookData['owner'],
             ]);
         }
     }

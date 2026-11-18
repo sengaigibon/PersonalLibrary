@@ -29,6 +29,10 @@ services:
     environment:
       APP_ENV: dev
       APP_SECRET: ${APP_SECRET}
+      # Keep the container's Symfony cache and logs out of the bind-mounted ./var,
+      # so the host and the container never fight over its ownership.
+      APP_CACHE_DIR: /tmp/symfony/cache
+      APP_LOG_DIR: /tmp/symfony/log
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
     depends_on:
       postgres:
