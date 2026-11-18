@@ -124,7 +124,7 @@ ReadingLog/
    ```bash
    make up-build
    ```
-   This builds the `postgres` and `app` images and starts them. On the first start, the `postgres` container creates the database user and the database from the `POSTGRES_*` values, and stores the data in `./db/data`. The app waits until the database is healthy. Check that both containers are `Up` with `podman-compose ps`.
+   This builds the `postgres` and `app` images and starts them. On the first start, the `postgres` container creates the database and stores the data in `./db/data`. The app waits until the database is healthy. Check that both containers are `Up` with `podman-compose ps`.
 
 
 4. **Create the database schema**
