@@ -55,7 +55,7 @@
                 {% for book in booksBroughtCurrentYear %}
                     <li>{{ book.title }}
                         {% if book.readLogs.count() %}
-                            {% if book.readLogs[0].getFinishDate() == null %}
+                            {% if book.readLogs.last().getFinishDate() == null %}
                                 <span class="highlight-current-status">(reading now)</span>
                             {% else %}
                                 <span class="highlight-current-status">(done)</span>
@@ -74,7 +74,7 @@
                 {% set totalPreviousYearReadCount = 0 %}
                 {% for book in booksBroughtPreviousYearRead %}
                     <li>{{ book.title }}
-                        {% if book.readLogs[0].getFinishDate() == null %}
+                        {% if book.readLogs.last().getFinishDate() == null %}
                             <span class="highlight-current-status">(reading now)</span>
                         {% else %}
                             {% set totalPreviousYearReadCount =  totalPreviousYearReadCount + 1 %}
