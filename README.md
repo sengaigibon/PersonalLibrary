@@ -218,9 +218,11 @@ make test-functional    # HTTP/controller tests (tests/Functional)
 Run `make test-db` once after setting up the project, and again after adding a migration.
 
 The fixtures live in `src/DataFixtures/` and use fixed values so tests can assert exact results:
-- **Readers**: `alice` (main reader) and `bob` (used to check that data is scoped per reader)
-- **Books**: 6 books covering every status (unread, reading, finished, finished twice) and one reference book
-- **Read logs**: 6 logs between 2024 and 2025
+- **Readers**: `alice` (main reader), `bob` (used to check that data is scoped per reader) and `carol` (no reading activity)
+- **Books**: 10 books covering every status (unread, reading, finished, finished twice), one reference book, one without a page count, and books bought in 2024 and 2025
+- **Read logs**: 8 logs between 2024 and 2025, including a book started and finished on the same day
+
+The dashboard depends on the current year, so dashboard tests should fix the date to 2025 with `ClockSensitiveTrait::mockTime()` (see `ReadLogFixtures.php` for the expected 2025 statistics).
 
 The status of each book per reader is documented in `BookFixtures.php`. Each fixture has a reference constant (e.g. `BookFixtures::DUNE`) that you can use to identify it in tests.
 

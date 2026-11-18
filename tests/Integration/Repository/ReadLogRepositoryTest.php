@@ -15,14 +15,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
 /**
  * Fixture data used here (see src/DataFixtures/ReadLogFixtures.php):
  *
- * | Log                 | Reader | Book                  | Start      | Finish     |
- * |---------------------|--------|-----------------------|------------|------------|
- * | ALICE_DUNE          | alice  | Dune                  | 2024-02-01 | 2024-03-10 |
- * | ALICE_HOBBIT_FIRST  | alice  | The Hobbit            | 2024-07-01 | 2024-07-12 |
- * | ALICE_HOBBIT_REREAD | alice  | The Hobbit            | 2025-01-05 | 2025-01-15 |
- * | ALICE_LOTR          | alice  | The Lord of the Rings | 2025-03-01 | -          |
- * | BOB_NEUROMANCER     | bob    | Neuromancer           | 2025-04-01 | 2025-04-20 |
- * | BOB_FOUNDATION      | bob    | Foundation            | 2025-05-02 | -          |
+ * | Log                     | Reader | Book                  | Start      | Finish     |
+ * |-------------------------|--------|-----------------------|------------|------------|
+ * | ALICE_DUNE              | alice  | Dune                  | 2024-02-01 | 2024-03-10 |
+ * | ALICE_HOBBIT_FIRST      | alice  | The Hobbit            | 2024-07-01 | 2024-07-12 |
+ * | ALICE_HOBBIT_REREAD     | alice  | The Hobbit            | 2025-01-05 | 2025-01-15 |
+ * | ALICE_PROJECT_HAIL_MARY | alice  | Project Hail Mary     | 2025-02-10 | 2025-02-10 |
+ * | ALICE_LOTR              | alice  | The Lord of the Rings | 2025-03-01 | -          |
+ * | ALICE_SNOW_CRASH        | alice  | Snow Crash            | 2025-06-01 | 2025-06-22 |
+ * | BOB_NEUROMANCER         | bob    | Neuromancer           | 2025-04-01 | 2025-04-20 |
+ * | BOB_FOUNDATION          | bob    | Foundation            | 2025-05-02 | -          |
+ *
+ * carol has no logs.
  */
 final class ReadLogRepositoryTest extends DatabaseTestCase
 {
@@ -52,8 +56,8 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
         yield 'alice 2024: two finished books, ordered by finish date' => [
             PersonFixtures::ALICE, 2024, [ReadLogFixtures::ALICE_DUNE, ReadLogFixtures::ALICE_HOBBIT_FIRST],
         ];
-        yield 'alice 2025: the re-read counts, the unfinished book does not' => [
-            PersonFixtures::ALICE, 2025, [ReadLogFixtures::ALICE_HOBBIT_REREAD],
+        yield 'alice 2025: the re-read and a same-day read count, the unfinished book does not' => [
+            PersonFixtures::ALICE, 2025, [ReadLogFixtures::ALICE_HOBBIT_REREAD, ReadLogFixtures::ALICE_PROJECT_HAIL_MARY, ReadLogFixtures::ALICE_SNOW_CRASH],
         ];
         yield 'bob 2025: only his own finished log' => [
             PersonFixtures::BOB, 2025, [ReadLogFixtures::BOB_NEUROMANCER],
@@ -63,6 +67,9 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
         ];
         yield 'year without any logs' => [
             PersonFixtures::ALICE, 2023, [],
+        ];
+        yield 'reader without any logs' => [
+            PersonFixtures::CAROL, 2025, [],
         ];
     }
 
@@ -114,13 +121,16 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
             ReadLogFixtures::ALICE_DUNE,
             ReadLogFixtures::ALICE_HOBBIT_FIRST,
             ReadLogFixtures::ALICE_HOBBIT_REREAD,
+            ReadLogFixtures::ALICE_PROJECT_HAIL_MARY,
             ReadLogFixtures::ALICE_LOTR,
+            ReadLogFixtures::ALICE_SNOW_CRASH,
         ];
 
         yield 'no title: all logs of the reader, ordered by start date' => [PersonFixtures::ALICE, '', $allAlice];
         yield 'no title: other reader only gets their own logs' => [
             PersonFixtures::BOB, '', [ReadLogFixtures::BOB_NEUROMANCER, ReadLogFixtures::BOB_FOUNDATION],
         ];
+        yield 'no title: reader without logs gets nothing' => [PersonFixtures::CAROL, '', []];
         yield 'exact title' => [PersonFixtures::ALICE, 'Dune', [ReadLogFixtures::ALICE_DUNE]];
         yield 'case insensitive' => [
             PersonFixtures::ALICE, 'hOBBIT', [ReadLogFixtures::ALICE_HOBBIT_FIRST, ReadLogFixtures::ALICE_HOBBIT_REREAD],
@@ -143,10 +153,14 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
             $this->logIds($this->repository->findByReaderAndTitle($alice, '', 2, 0))
         );
         self::assertSame(
-            $this->ids([ReadLogFixtures::ALICE_HOBBIT_REREAD, ReadLogFixtures::ALICE_LOTR]),
+            $this->ids([ReadLogFixtures::ALICE_HOBBIT_REREAD, ReadLogFixtures::ALICE_PROJECT_HAIL_MARY]),
             $this->logIds($this->repository->findByReaderAndTitle($alice, '', 2, 2))
         );
-        self::assertSame([], $this->repository->findByReaderAndTitle($alice, '', 2, 4));
+        self::assertSame(
+            $this->ids([ReadLogFixtures::ALICE_LOTR, ReadLogFixtures::ALICE_SNOW_CRASH]),
+            $this->logIds($this->repository->findByReaderAndTitle($alice, '', 2, 4))
+        );
+        self::assertSame([], $this->repository->findByReaderAndTitle($alice, '', 2, 6));
     }
 
     public function testFindByReaderAndTitlePaginatesFilteredResults(): void
