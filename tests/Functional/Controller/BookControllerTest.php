@@ -4,6 +4,7 @@ namespace App\Tests\Functional\Controller;
 
 use App\DataFixtures\BookFixtures;
 use App\DataFixtures\PersonFixtures;
+use App\DataFixtures\ReadLogFixtures;
 use App\Entity\Book;
 use App\Entity\ReadLog;
 use App\Tests\Functional\ApplicationTestCase;
@@ -95,7 +96,25 @@ final class BookControllerTest extends ApplicationTestCase
 
         self::assertResponseStatusCodeSame(422);
         self::assertSelectorExists('form input[name="book[title]"]');
+        self::assertSelectorTextContains('form', 'This value should not be blank.');
         self::assertSame($booksBefore, $this->entityManager()->getRepository(Book::class)->count());
+    }
+
+    public function testNewRejectsInvalidValues(): void
+    {
+        $this->client->request('GET', '/books/new');
+
+        $this->client->submitForm('Save', [
+            'book[title]' => 'Hyperion',
+            'book[author]' => 'Dan Simmons',
+            'book[isbn]' => '97805532836860000',
+            'book[pages]' => '-5',
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('form', 'This value is too long. It should have 13 characters or less.');
+        self::assertSelectorTextContains('form', 'This value should be positive.');
+        self::assertNull($this->entityManager()->getRepository(Book::class)->findOneBy(['title' => 'Hyperion']));
     }
 
     public function testNewBackLinkKeepsPagination(): void
@@ -129,6 +148,19 @@ final class BookControllerTest extends ApplicationTestCase
         self::assertSelectorTextContains('.alert-success', 'Book saved successfully!');
     }
 
+    public function testEditWithAnEmptyTitleShowsTheFormAgainAndKeepsTheBook(): void
+    {
+        $this->client->request('GET', '/books/' . $this->id(BookFixtures::DUNE) . '/edit');
+
+        $this->client->submitForm('Update Book', [
+            'book[title]' => '',
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('form', 'This value should not be blank.');
+        self::assertSame('Dune', $this->entityManager()->find(Book::class, $this->id(BookFixtures::DUNE))->getTitle());
+    }
+
     public function testEditUnknownBookReturns404(): void
     {
         $this->client->request('GET', '/books/999999/edit');
@@ -146,16 +178,39 @@ final class BookControllerTest extends ApplicationTestCase
 
         self::assertResponseRedirects('/books', 303);
         self::assertNull($this->entityManager()->find(Book::class, $bookId));
+
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-success', 'Book deleted successfully!');
+    }
+
+    public function testDeleteIsBlockedWhenTheBookHasReadingLogs(): void
+    {
+        $bookId = $this->id(BookFixtures::HOBBIT);
+        $this->client->request('GET', '/books/' . $bookId . '/edit');
+
+        $this->client->submit($this->client->getCrawler()->filter('form[action="/books/' . $bookId . '"]')->form());
+
+        self::assertResponseRedirects('/books/' . $bookId, 303);
+        self::assertNotNull($this->entityManager()->find(Book::class, $bookId));
+        self::assertSame(2, $this->entityManager()->getRepository(ReadLog::class)->count(['book' => $bookId]));
+
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-danger', "This book can't be deleted because it has 2 reading log entries.");
     }
 
     public function testDeleteWithAnInvalidCsrfTokenKeepsTheBook(): void
     {
+        $this->chooseReader($this->id(PersonFixtures::ALICE));
         $bookId = $this->id(BookFixtures::CLEAN_CODE);
 
         $this->client->request('POST', '/books/' . $bookId, ['_token' => 'invalid']);
 
         self::assertResponseRedirects('/books', 303);
         self::assertNotNull($this->entityManager()->find(Book::class, $bookId));
+
+        $this->client->followRedirect();
+        self::assertSelectorNotExists('.alert-success');
+        self::assertSelectorTextContains('.alert-danger', 'The book could not be deleted');
     }
 
     public function testQueryReturnsTitleAndPublishDateFromOpenLibrary(): void
@@ -264,11 +319,34 @@ final class BookControllerTest extends ApplicationTestCase
 
         $this->client->request('GET', '/books/finish/' . $this->id(BookFixtures::HOBBIT));
 
+        self::assertResponseStatusCodeSame(400);
+        self::assertSame(['error' => 'You are not reading this book, start reading it first'], $this->jsonResponse());
+
         $finishDates = array_map(
             fn (ReadLog $log) => $log->getFinishDate()->format('Y-m-d'),
             $this->entityManager()->getRepository(ReadLog::class)->findBy(['book' => $this->id(BookFixtures::HOBBIT)], ['startDate' => 'ASC'])
         );
         self::assertSame(['2024-07-12', '2025-01-15'], $finishDates);
+    }
+
+    public function testFinishReadingWithoutAReaderReturnsAnError(): void
+    {
+        $this->client->request('GET', '/books/finish/' . $this->id(BookFixtures::LOTR));
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertSame(['error' => 'No reader has been set, go to the welcome page'], $this->jsonResponse());
+        self::assertNull($this->entityManager()->find(ReadLog::class, $this->id(ReadLogFixtures::ALICE_LOTR))->getFinishDate());
+    }
+
+    public function testFinishReadingABookOnlyAnotherReaderIsReadingReturnsAnError(): void
+    {
+        // The Lord of the Rings: only alice is reading it
+        $this->chooseReader($this->id(PersonFixtures::BOB));
+
+        $this->client->request('GET', '/books/finish/' . $this->id(BookFixtures::LOTR));
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertNull($this->entityManager()->find(ReadLog::class, $this->id(ReadLogFixtures::ALICE_LOTR))->getFinishDate());
     }
 
     public function testFinishReadingABookWithoutLogsReturnsAnError(): void
