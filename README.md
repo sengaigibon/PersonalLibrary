@@ -164,6 +164,56 @@ php bin/console doctrine:migrations:migrate
 php bin/console cache:clear
 ```
 
+### Rebuilding the Containers After Changes
+
+The `make` targets run `podman-compose` under the hood. With Docker, override it per command, e.g. `make up-build COMPOSE="docker compose"`, or change `COMPOSE` at the top of the `Makefile`.
+
+The project directory is bind-mounted into the `app` container (`.:/var/www/html`), so **most code changes don't need a rebuild**. What you need depends on what you changed:
+
+| What changed | What to do |
+|---|---|
+| PHP code, Twig templates, CSS/JS, config in `config/` | Nothing, just reload the page (if it doesn't show up, run `make cache-clear`) |
+| `composer.json` / `composer.lock` | `make composer-install` (see below) |
+| New migration in `migrations/` | `make migrate` |
+| `docker/app/Dockerfile`, `docker/nginx.conf`, `docker/default.conf`, `docker/supervisord.conf`, `docker/entrypoint.sh` | Rebuild the image |
+| `docker/postgres/*` | Rebuild the image |
+| `compose.yaml` / `compose.override.yaml` | Recreate the containers: `make down && make up` |
+
+**Rebuild the images and restart the containers:**
+```bash
+make down
+make up-build          # = podman-compose up -d --build
+```
+
+To rebuild a single service, or force a clean build without cached layers:
+```bash
+make build-app              # only the app image
+make build-app-no-cache     # ignore cached layers
+make up-app                 # start/recreate only the app container
+```
+
+**Composer dependencies:** `vendor/` is kept in a named volume (`vendor`), which is **not** refreshed when the image is rebuilt. After changing dependencies, install them in the running container:
+```bash
+make composer-install
+```
+Or remove the volume, so the next start fills it from the freshly built image:
+```bash
+make down-volumes   # removes named volumes (vendor); the database in ./db/data is a bind mount and is kept
+make up-build
+```
+
+**Database migrations:**
+```bash
+make migrate
+```
+
+**Check that everything is running:**
+```bash
+podman-compose ps
+podman-compose logs -f app
+```
+The app is served at http://localhost:8081.
+
 ## 🎯 API Endpoints
 
 ### Book Management
