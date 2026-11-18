@@ -6,13 +6,6 @@ use App\Entity\Person;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
-/**
- * Readers used by the integration tests.
- *
- * - alice: the main reader, has finished, re-read and in-progress books.
- * - bob:   a second reader, used to check that data is scoped per reader.
- * - carol: a reader without any reading activity (empty dashboard, no division by zero).
- */
 class PersonFixtures extends Fixture
 {
     public const string ALICE = 'reader-alice';
