@@ -6,7 +6,7 @@
 <div class="edit-container">
     <div class="edit-header">
         <h1>✏️ Edit Reading Log</h1>
-        <a href="{{ path('app_dashboard_reading_log') }}" class="btn-base btn-back">← Back to Reading Log</a>
+        <a href="{{ path('app_dashboard_reading_log', pagination_params|default({})) }}" class="btn-base btn-back">← Back to Reading Log</a>
     </div>
 
     <div class="form-card">

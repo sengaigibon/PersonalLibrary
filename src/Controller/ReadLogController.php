@@ -19,6 +19,10 @@ final class ReadLogController extends AbstractController
     #[Route('/new', name: 'app_read_log_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, PersonRepository $personRepository): Response
     {
+        // Get pagination parameters to preserve them
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
+
         $readerId = $session->get('current_reader_id');
 
         if (!$readerId) {
@@ -35,13 +39,14 @@ final class ReadLogController extends AbstractController
             $entityManager->persist($readLog);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_dashboard_reading_log', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_reading_log', ['page' => $page, 'limit' => $limit], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'new-log',
             'read_log' => $readLog,
             'form' => $form,
+            'pagination_params' => ['page' => $page, 'limit' => $limit]
         ]);
     }
 
@@ -126,19 +131,24 @@ final class ReadLogController extends AbstractController
     #[Route('/{id}/edit', name: 'app_read_log_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, ReadLog $readLog, EntityManagerInterface $entityManager): Response
     {
+        // Get pagination parameters to preserve them
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 20);
+
         $form = $this->createForm(ReadLogType::class, $readLog);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_dashboard_reading_log', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_dashboard_reading_log', ['page' => $page, 'limit' => $limit], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'edit-log',
             'read_log' => $readLog,
             'form' => $form,
+            'pagination_params' => ['page' => $page, 'limit' => $limit]
         ]);
     }
 
@@ -150,6 +160,9 @@ final class ReadLogController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_dashboard_reading_log', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_dashboard_reading_log', [
+            'page' => $request->query->getInt('page', 1),
+            'limit' => $request->query->getInt('limit', 20),
+        ], Response::HTTP_SEE_OTHER);
     }
 }

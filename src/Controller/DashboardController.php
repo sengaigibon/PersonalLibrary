@@ -139,7 +139,7 @@ final class DashboardController extends AbstractController
     }
 
     #[Route('/read/log', name: 'app_dashboard_reading_log')]
-    public function readingLog(ReadLogRepository $readLogRepository, SessionInterface $session): Response
+    public function readingLog(ReadLogRepository $readLogRepository, SessionInterface $session, Request $request): Response
     {
         $readerId = $session->get('current_reader_id');
         if (!$readerId) {
@@ -147,9 +147,29 @@ final class DashboardController extends AbstractController
             return $this->redirectToRoute('app_main');
         }
 
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, min(100, $request->query->getInt('limit', 20)));
+        $offset = ($page - 1) * $limit;
+
+        $criteria = ['reader' => $readerId];
+        $totalLogs = $readLogRepository->count($criteria);
+        $readLogs = $readLogRepository->findBy($criteria, ['startDate' => 'ASC', 'id' => 'ASC'], $limit, $offset);
+
+        $totalPages = (int) ceil($totalLogs / $limit);
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'logs',
-            'readLogs' => $readLogRepository->findBy(['reader' => $readerId], ['startDate' => 'ASC']),
+            'readLogs' => $readLogs,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_items' => $totalLogs,
+                'items_per_page' => $limit,
+                'has_next' => $page < $totalPages,
+                'has_prev' => $page > 1,
+                'start_item' => $offset + 1,
+                'end_item' => min($offset + $limit, $totalLogs)
+            ]
         ]);
     }
 }
