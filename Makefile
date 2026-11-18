@@ -58,6 +58,18 @@ migrate: ## Run Doctrine migrations inside the app container
 create-reader: ## Create a new reader (asks for nickname and full name)
 	$(CONSOLE) app:reader:create
 
+# ── Test database ─────────────────────────────────────────────
+# Always runs with --env=test, so it only touches the "_test" database.
+
+test-db: ## (Re)create the test database, run migrations and load fixtures
+	$(CONSOLE) --env=test doctrine:database:drop --force --if-exists
+	$(CONSOLE) --env=test doctrine:database:create
+	$(CONSOLE) --env=test doctrine:migrations:migrate --no-interaction
+	$(CONSOLE) --env=test doctrine:fixtures:load --no-interaction
+
+test-fixtures: ## Reload fixtures into the test database (purges it first)
+	$(CONSOLE) --env=test doctrine:fixtures:load --no-interaction
+
 # ── Symfony Console ───────────────────────────────────────────
 
 cache-clear: ## Clear Symfony cache
