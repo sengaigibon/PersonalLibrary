@@ -50,7 +50,12 @@ class Book implements JsonSerializable
      * @var Collection<int, ReadLog>
      */
     #[ORM\OneToMany(targetEntity: ReadLog::class, mappedBy: 'book')]
+    #[ORM\OrderBy(['startDate' => 'ASC', 'id' => 'ASC'])]
     private Collection $readLogs;
+
+    #[ORM\ManyToOne(inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Person $owner = null;
 
     public function __construct()
     {
@@ -152,6 +157,23 @@ class Book implements JsonSerializable
         return $this;
     }
 
+    public function getOwner(): ?Person
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?Person $owner): static
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    public function isOwnedBy(?int $personId): bool
+    {
+        return $personId !== null && $this->owner?->getId() === $personId;
+    }
+
     public function isReference(): bool
     {
         return $this->isReference;
@@ -172,6 +194,7 @@ class Book implements JsonSerializable
             'pages' => $this->pages,
             'purchaseDate' => $this->purchaseDate?->format('Y-m-d'),
             'isReference' => $this->isReference,
+            'owner' => $this->owner?->getId(),
         ];
     }
 }
