@@ -7,6 +7,7 @@ use App\Entity\ReadLog;
 use App\Form\BookType;
 use App\Repository\BookRepository;
 use App\Repository\PersonRepository;
+use App\Repository\ReadLogRepository;
 use App\Services\OpenLibraryApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -87,10 +88,24 @@ final class BookController extends AbstractController
     #[Route('/{id}', name: 'app_book_delete', methods: ['POST'])]
     public function delete(Request $request, Book $book, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$book->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($book);
-            $entityManager->flush();
+        if (!$this->isCsrfTokenValid('delete'.$book->getId(), $request->getPayload()->getString('_token'))) {
+            $this->addFlash('error', 'The book could not be deleted, please try again.');
+            return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
         }
+
+        $readLogsCount = $book->getReadLogs()->count();
+        if ($readLogsCount > 0) {
+            $this->addFlash('error', sprintf(
+                'This book can\'t be deleted because it has %d reading log %s. Delete %s from the Reading Log first.',
+                $readLogsCount,
+                $readLogsCount === 1 ? 'entry' : 'entries',
+                $readLogsCount === 1 ? 'it' : 'them'
+            ));
+            return $this->redirectToRoute('app_book_show', ['id' => $book->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        $entityManager->remove($book);
+        $entityManager->flush();
 
         $this->addFlash('success', 'Book deleted successfully!');
         return $this->redirectToRoute('app_dashboard_books', [], Response::HTTP_SEE_OTHER);
@@ -128,18 +143,26 @@ final class BookController extends AbstractController
     }
 
     #[Route('/finish/{id}', name: 'app_book_finish', methods: ['GET'])]
-    public function finishReading(Book $book, EntityManagerInterface $entityManager): Response
+    public function finishReading(Book $book, EntityManagerInterface $entityManager, SessionInterface $session, ReadLogRepository $readLogRepository): Response
     {
-        try {
-            $logs = $book->getReadLogs();
-            if ($logs->isEmpty()) {
-                $log = new ReadLog();
-            } else {
-                $log = $logs->first();
-            }
+        $readerId = $session->get('current_reader_id');
 
+        if (!$readerId) {
+            return $this->json(['error' => 'No reader has been set, go to the welcome page'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Only the current reader's unfinished log
+        $log = $readLogRepository->findOneBy(
+            ['book' => $book, 'reader' => $readerId, 'finishDate' => null],
+            ['startDate' => 'DESC', 'id' => 'DESC']
+        );
+
+        if (!$log) {
+            return $this->json(['error' => 'You are not reading this book, start reading it first'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
             $log->setFinishDate(new \DateTime());
-            $entityManager->persist($log);
             $entityManager->flush();
         } catch (\Exception $exception) {
             return $this->json(['error' => $exception->getMessage()], Response::HTTP_BAD_REQUEST);
