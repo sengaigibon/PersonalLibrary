@@ -210,7 +210,9 @@ Integration tests use a separate database: the main database name with a `_test`
 ```bash
 make test-db         # (re)create the test database, run migrations and load the fixtures
 make test-fixtures   # reload the fixtures only (purges the test database first)
-make test            # run the tests
+make test               # run all tests
+make test-integration   # repository tests (tests/Integration)
+make test-functional    # HTTP/controller tests (tests/Functional)
 ```
 
 Run `make test-db` once after setting up the project, and again after adding a migration.
@@ -223,6 +225,8 @@ The fixtures live in `src/DataFixtures/` and use fixed values so tests can asser
 The status of each book per reader is documented in `BookFixtures.php`. Each fixture has a reference constant (e.g. `BookFixtures::DUNE`) that you can use to identify it in tests.
 
 Integration tests live in `tests/Integration/` and extend `DatabaseTestCase`. It reloads the fixtures before each test class, provides `$this->id(BookFixtures::DUNE)` to get a fixture's database id, and `inRolledBackTransaction()` for tests that add data. It refuses to run against any database that isn't a `_test` database.
+
+Functional tests live in `tests/Functional/` and extend `ApplicationTestCase`. They send real HTTP requests through routing, controllers, forms and Twig. Because they change data, the fixtures are reloaded before every test. `chooseReader()` picks the current reader the same way the welcome page does. External APIs are replaced with `MockHttpClient`, so tests never call OpenLibrary.
 
 ### Clearing Cache
 ```bash

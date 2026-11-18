@@ -89,10 +89,10 @@ services: ## List all registered services
 test: ## Run all tests
 	$(APP) php bin/phpunit --cache-directory=/tmp/phpunit-cache
 
-test-unit: ## Run unit tests only
-	$(APP) php bin/phpunit --cache-directory=/tmp/phpunit-cache --testsuite=unit
+test-integration: ## Run integration tests only (repositories against the test database)
+	$(APP) php bin/phpunit --cache-directory=/tmp/phpunit-cache --testsuite=integration
 
-test-functional: ## Run functional tests only
+test-functional: ## Run functional tests only (HTTP requests through the whole app)
 	$(APP) php bin/phpunit --cache-directory=/tmp/phpunit-cache --testsuite=functional
 
 # ── Xdebug ────────────────────────────────────────────────────

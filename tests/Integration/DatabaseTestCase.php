@@ -2,12 +2,7 @@
 
 namespace App\Tests\Integration;
 
-use App\DataFixtures\BookFixtures;
-use App\DataFixtures\PersonFixtures;
-use App\DataFixtures\ReadLogFixtures;
-use Doctrine\Common\DataFixtures\Executor\ORMExecutor;
-use Doctrine\Common\DataFixtures\Loader;
-use Doctrine\Common\DataFixtures\Purger\ORMPurger;
+use App\Tests\LoadsFixtures;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -23,40 +18,14 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
  */
 abstract class DatabaseTestCase extends KernelTestCase
 {
-    /** @var array<string, int> fixture reference name => entity id */
-    private static array $ids = [];
+    use LoadsFixtures;
 
     protected EntityManagerInterface $entityManager;
 
     public static function setUpBeforeClass(): void
     {
         $kernel = self::bootKernel();
-        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
-
-        $database = $entityManager->getConnection()->getDatabase();
-        if ($kernel->getEnvironment() !== 'test' || !str_contains((string) $database, '_test')) {
-            throw new \LogicException(sprintf(
-                'Refusing to purge database "%s" in the "%s" environment: integration tests must run against the test database.',
-                $database,
-                $kernel->getEnvironment()
-            ));
-        }
-
-        $loader = new Loader();
-        $loader->addFixture(new PersonFixtures());
-        $loader->addFixture(new BookFixtures());
-        $loader->addFixture(new ReadLogFixtures());
-
-        $executor = new ORMExecutor($entityManager, new ORMPurger($entityManager));
-        $executor->execute($loader->getFixtures());
-
-        self::$ids = [];
-        foreach ($executor->getReferenceRepository()->getReferencesByClass() as $references) {
-            foreach ($references as $name => $entity) {
-                self::$ids[$name] = $entity->getId();
-            }
-        }
-
+        self::loadFixtures(self::getContainer()->get(EntityManagerInterface::class), $kernel->getEnvironment());
         self::ensureKernelShutdown();
     }
 
@@ -70,18 +39,6 @@ abstract class DatabaseTestCase extends KernelTestCase
     {
         parent::tearDown();
         unset($this->entityManager);
-    }
-
-    /**
-     * The database id of a fixture, e.g. $this->id(PersonFixtures::ALICE).
-     */
-    protected function id(string $reference): int
-    {
-        if (!isset(self::$ids[$reference])) {
-            throw new \InvalidArgumentException(sprintf('Unknown fixture reference "%s".', $reference));
-        }
-
-        return self::$ids[$reference];
     }
 
     /**
