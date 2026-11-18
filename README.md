@@ -1,41 +1,42 @@
-# 📚 Reading Record (RR)
+# 📚 Personal Library
 
-A modern web application for tracking your reading journey, managing your book library, and monitoring reading progress with detailed logs and ratings.
+A modern web application for managing your book library, tracking your reading journey and monitoring reading progress with detailed logs and ratings.
 
 ## 🌟 Features
 
+### 👥 Readers & Libraries
+- **Multiple Readers**: Choose who is reading on the welcome page; new readers are created with `make create-reader`
+- **Separate Libraries**: Each reader has their own books and reading logs, and only sees their own (there is no login: anyone can pick any reader)
+
 ### 📖 Book Management
-- **Add New Books**: Create entries with title, author, ISBN, page count, and purchase date
-- **ISBN Search Integration**: Auto-populate book details using OpenLibrary API
-- **Book Library**: View all books in a modern, responsive table with search and filtering
-- **Book Details**: Detailed view of each book with all metadata
-- **Edit & Delete**: Full CRUD operations for book management
-- **Separate Libraries**: Each reader has their own library; books and reading logs are only visible to their owner (readers are chosen on the welcome page, there is no login)
+- **Add New Books**: Create entries with title, author, ISBN, page count, purchase date, and a "reference book" flag
+- **Book Library**: Paginated table of your books, searchable by title, author, status (unread, reading, finished) or ID
+- **Book Details**: Detailed view of each book with all its metadata
+- **Edit & Delete**: Books can be edited, and deleted as long as they have no reading logs
+- **Validation**: Title and author are required; ISBN length and page count are checked
 
 ### 📊 Reading Progress Tracking
-- **Start Reading**: One-click to begin tracking a reading session
-- **Reading Status**: Visual indicators showing book status (Unread, Reading, Finished)
-- **Finish Reading**: Complete reading sessions with ratings and notes
-- **Reading Logs**: Detailed history of all reading sessions
+- **Start / Finish Reading**: One click in the library starts a reading session today, or finishes the one in progress
+- **Log Past Readings**: Record a reading you already did from the library, with exact dates or just the year, and a rating
+- **Reading Status**: Visual indicators for each book: 📚 Unread, 📖 Reading, ✅ Finished
+- **Re-reading**: A book can be read several times; each reading is its own log
+- **Reading Log**: Paginated list of your reading sessions, searchable by book title, with ⭐ ratings (1-5) and personal notes
 
-### 📈 Reading Analytics
-- **Visual Status Indicators**: 
-  - 📚 Unread books
-  - 📖 Currently reading
-  - ✅ Finished books
-- **Star Ratings**: 5-star rating system with visual star display
-- **Reading Notes**: Personal notes and thoughts for each reading session
-- **Progress Timeline**: Chronological view of reading activity
+### 📈 Dashboard
+- **Reading Now**: The books you are currently reading, with a link to open them in the library
+- **This Year**: Books read, pages read, and average days per book
+- **Library Totals**: Library size, books read, percentage read, and books waiting to be read
+- **New Books**: Books bought this year and last year, with their reading status and how many of last year's you have read
 
-### 🎨 Modern User Interface
-- **Interactive Elements**: Smooth animations and hover effects
-- **Dashboard Layout**: Sidebar navigation with content areas
-- **Modern Cards**: Clean, card-based design throughout
+### 🎨 User Interface
+- **Dashboard Layout**: Sidebar navigation with content areas and card-based pages
+- **Interactive Elements**: Hover effects and transitions, flash messages for every action
 
-### 🔒 Security Features
-- **CSRF Protection**: All forms protected against cross-site request forgery
-- **Input Validation**: Server-side validation for all user inputs
-- **Secure Routing**: Properly configured route security
+### 🔒 Security
+- **CSRF Protection**: Book and reading log forms, and delete actions, are protected against cross-site request forgery
+
+### 💾 Backup & Restore
+- **JSON Backups**: `php bin/console app:db:backup` saves readers, books and reading logs to `~/backups`; `app:db:restore` restores the most recent backup
 
 ## 🛠️ Tech Stack
 
@@ -49,7 +50,7 @@ A modern web application for tracking your reading journey, managing your book l
 ### Frontend
 - **HTML5 & CSS3**: Modern web standards
 - **JavaScript (ES6+)**: Client-side interactivity and AJAX
-- **Custom CSS Framework**: Tailored styling system (rr-styles.css)
+- **Custom CSS**: Hand-written stylesheets in `assets/styles/`
 - **Font Icons**: Unicode icons for visual elements
 
 ### Development & Tools
@@ -61,31 +62,35 @@ A modern web application for tracking your reading journey, managing your book l
 - **Docker**: Containerized development environment
 
 ### External APIs
-- **OpenLibrary API**: Book metadata retrieval by ISBN
+- **OpenLibrary API**: Book title and publish date lookup by ISBN (backend only, not used by the UI yet)
 - **HTTP Client**: Symfony's HTTP client for API integration
 
 ## 📁 Project Structure
 
 ```
-ReadingLog/
-├── assets/                 # Frontend assets
-│   ├── styles/
-│   │   └── rr-styles.css  # Main stylesheet
+PersonalLibrary/
+├── assets/                # Frontend assets
+│   ├── styles/            # Stylesheets (common, dashboard, flash messages)
+│   ├── scripts/           # Flash messages, searchable selects
 │   └── controllers/       # Stimulus controllers
+├── docker/                # Container images and configuration
 ├── src/
+│   ├── Command/           # Console commands (backup, restore, create reader)
 │   ├── Controller/        # Application controllers
-│   ├── Entity/           # Database entities (Book, ReadLog)
-│   ├── Form/             # Symfony forms
-│   ├── Repository/       # Database repositories
-│   └── Services/         # Business logic services
-├── templates/            # Twig templates
-│   ├── book/            # Book management templates
-│   ├── log/             # Reading log templates
-│   ├── dashboard/       # Dashboard templates
-│   └── welcome/         # Welcome page
-├── config/              # Application configuration
-├── migrations/          # Database migrations
-└── public/              # Web accessible files
+│   ├── DataFixtures/      # Test data
+│   ├── Entity/            # Database entities (Person, Book, ReadLog)
+│   ├── Form/              # Symfony forms
+│   ├── Repository/        # Database repositories
+│   └── Services/          # Current reader, OpenLibrary API client
+├── templates/             # Twig templates
+│   ├── book/              # Book management templates
+│   ├── log/               # Reading log templates
+│   ├── dashboard/         # Dashboard templates
+│   └── welcome/           # Welcome page
+├── tests/                 # Integration and functional tests
+├── config/                # Application configuration
+├── migrations/            # Database migrations
+└── public/                # Web accessible files
 ```
 
 ## 🚀 Installation
@@ -177,21 +182,16 @@ ReadingLog/
 ## 📱 Usage
 
 ### Getting Started
-1. **Access the Dashboard**: Navigate to `/dashboard` to enter the main application
-2. **Add Your First Book**: Click "Add New Book" to create your first book entry
-3. **Start Reading**: Use the "Start Reading" button to begin tracking
-4. **Finish & Rate**: Complete your reading session with notes and ratings
+1. **Choose a Reader**: Open the application and pick your reader on the welcome page
+2. **Add Your First Book**: In the Library, click "Add New Book"
+3. **Start Reading**: Click "Start" next to the book in the Library
+4. **Finish Reading**: Click "Finish" when you are done; add a rating and notes by editing the entry in the Reading Log
 
 ### Navigation
-- **Dashboard**: Overview and main navigation
-- **Books Library**: Manage your book collection
-- **Reading Log**: View all reading sessions and progress
-
-### Features Walkthrough
-- **Book Status**: Each book shows its current status (Unread/Reading/Finished)
-- **Quick Actions**: Start/finish reading directly from the books table
-- **Reading History**: Track all your reading sessions with dates and ratings
-- **Notes & Ratings**: Add personal thoughts and rate books 1-5 stars
+- **Dashboard**: Reading statistics for the current year and your library
+- **Library**: Manage your books
+- **Reading Log**: All your reading sessions
+- **Exit**: Back to the welcome page to choose another reader
 
 ## 🔧 Development
 
@@ -291,23 +291,32 @@ make logs                    # Symfony's dev.log
 When you run PHP commands in the container yourself, run them as `www-data` (the same user as php-fpm): `podman-compose exec -u www-data app php bin/console ...`. The `make` targets already do this. `make shell` opens a shell as `www-data`; use `make shell-root` only for system tasks.
 The app is served at http://localhost:8081.
 
-## 🎯 API Endpoints
+## 🎯 Routes
 
-### Book Management
-- `GET /books` - Books library (dashboard)
-- `POST /book/start/{id}` - Start reading a book
-- `POST /book/finish/{id}` - Finish reading a book
-- `GET /book/{id}` - View book details
-- `POST /book/new` - Create new book
-- `PUT /book/{id}/edit` - Update book
+All routes except the welcome page require a reader to be chosen. Books and reading logs of another reader return 404.
+
+### Readers
+- `GET /` - Welcome page (choose a reader)
+- `POST /setReader` - Set the current reader (JSON: `{"readerId": 1}`)
+- `GET /dashboard` - Dashboard
+
+### Books
+- `GET /books` - Library (query: `title`, `author`, `status`, `id`, `page`, `limit`)
+- `GET|POST /books/new` - Create a book
+- `GET /books/{id}` - Book details
+- `GET|POST /books/{id}/edit` - Edit a book
+- `POST /books/{id}` - Delete a book
+- `GET /books/start/{id}` - Start reading a book (JSON)
+- `GET /books/finish/{id}` - Finish reading a book (JSON)
+- `GET /books/query/{isbn}` - Look up a book's title and publish date on OpenLibrary (JSON, not used by the UI yet)
 
 ### Reading Logs
-- `GET /read/log` - Reading log index
-- `POST /read/log/new` - Create reading log
-- `GET /read/log/{id}` - View reading log
-- `PUT /read/log/{id}/edit` - Update reading log
-- `DELETE /read/log/{id}` - Delete reading log
-
+- `GET /read/log` - Reading log (query: `title`, `page`, `limit`)
+- `GET|POST /read/log/new` - Create a reading log
+- `POST /read/log/quicknew/{id}` - Log a past reading of a book (JSON)
+- `GET /read/log/{id}` - Reading log details
+- `GET|POST /read/log/{id}/edit` - Edit a reading log
+- `POST /read/log/{id}` - Delete a reading log
 
 ## 🆘 Support
 
