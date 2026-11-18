@@ -2,27 +2,12 @@
 
 namespace App\Tests\Functional\Controller;
 
+use App\DataFixtures\BookFixtures;
 use App\DataFixtures\PersonFixtures;
 use App\Tests\Functional\ApplicationTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
-/**
- * The dashboard depends on the current year, so every test fixes the date to 2025-08-15.
- * The expected values come from the fixtures (see src/DataFixtures/*.php):
- *
- * |                       | alice                                | bob                  | carol |
- * |-----------------------|--------------------------------------|----------------------|-------|
- * | Read in 2025          | The Hobbit, Project Hail Mary,       | Neuromancer          | -     |
- * |                       | Snow Crash                           |                      |       |
- * | Pages / avg days      | 780 / 10.33 (10 + 0 + 21 days)       | 271 / 19             | 0 / 0 |
- * | Reading now           | The Lord of the Rings                | Foundation           | -     |
- * | Finished (all time)   | 4 of 10 (40%)                        | 1 of 10 (10%)        | 0     |
- *
- * Books bought in 2025: Foundation, Snow Crash, Kindred.
- * Books bought in 2024: The Lord of the Rings, Neuromancer, Project Hail Mary, Solaris.
- * The library is shared: every reader sees every book bought in a year, with their own status.
- */
 final class DashboardControllerTest extends ApplicationTestCase
 {
     use ClockSensitiveTrait;
@@ -32,8 +17,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         parent::setUp();
         static::mockTime('2025-08-15 10:00:00');
     }
-
-    // ── access ────────────────────────────────────────────────
 
     public function testWithoutAReaderRedirectsToTheWelcomePage(): void
     {
@@ -51,7 +34,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         self::assertResponseIsSuccessful();
         self::assertSame(['Foundation'], $this->readingNow());
 
-        // The reader is remembered for the next requests
         $this->client->request('GET', '/dashboard');
         self::assertResponseIsSuccessful();
         self::assertSame(['Foundation'], $this->readingNow());
@@ -65,8 +47,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         self::assertNotNull($this->card('Books brought to your shelf last year (2024)'));
     }
 
-    // ── reading now ───────────────────────────────────────────
-
     public function testReadingNowShowsOnlyTheReadersOpenBooks(): void
     {
         $this->openDashboard(PersonFixtures::ALICE);
@@ -78,8 +58,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         $this->openDashboard(PersonFixtures::CAROL);
         self::assertSame([], $this->readingNow());
     }
-
-    // ── this year ─────────────────────────────────────────────
 
     public function testBooksReadThisYear(): void
     {
@@ -109,85 +87,103 @@ final class DashboardControllerTest extends ApplicationTestCase
         self::assertSame(['0 books', '0 pages', '0 days'], $this->stats('Statistics for this year'));
     }
 
-    // ── total statistics ──────────────────────────────────────
-
-    public function testTotalStatistics(): void
+    public function testTotalStatisticsCoverOnlyTheReadersLibrary(): void
     {
         $this->openDashboard(PersonFixtures::ALICE);
-        self::assertSame(['10', '4', '40%', '6'], $this->stats('Total Statistics'));
+        self::assertSame(['8', '4', '50%', '4'], $this->stats('Total Statistics'));
 
         $this->openDashboard(PersonFixtures::BOB);
-        self::assertSame(['10', '1', '10%', '9'], $this->stats('Total Statistics'));
+        self::assertSame(['2', '1', '50%', '1'], $this->stats('Total Statistics'));
+    }
+
+    public function testTotalStatisticsWithAnEmptyLibrary(): void
+    {
+        $this->openDashboard(PersonFixtures::CAROL);
+
+        self::assertSame(['0', '0', '0%', '0'], $this->stats('Total Statistics'));
+    }
+
+    public function testBooksBoughtThisYearShowTheReadersBooksWithTheirStatus(): void
+    {
+        $this->openDashboard(PersonFixtures::ALICE);
+        $card = $this->card('New books on the shelf this year (2025)');
+        self::assertStringContainsString('The library has received 2 books', $card->text());
+        self::assertSame(['Snow Crash' => '(done)', 'Kindred' => ''], $this->statuses($card));
+
+        $this->openDashboard(PersonFixtures::BOB);
+        $card = $this->card('New books on the shelf this year (2025)');
+        self::assertStringContainsString('The library has received 1 books', $card->text());
+        self::assertSame(['Foundation' => '(reading now)'], $this->statuses($card));
 
         $this->openDashboard(PersonFixtures::CAROL);
-        self::assertSame(['10', '0', '0%', '10'], $this->stats('Total Statistics'));
+        $card = $this->card('New books on the shelf this year (2025)');
+        self::assertStringContainsString('The library has received 0 books', $card->text());
+        self::assertSame([], $this->statuses($card));
     }
 
-    // ── books bought this year ────────────────────────────────
-
-    public function testBooksBoughtThisYearShowsEveryBookBoughtThatYear(): void
+    public function testStatusOfARereadBookComesFromTheLatestReading(): void
     {
-        foreach ([PersonFixtures::ALICE, PersonFixtures::BOB, PersonFixtures::CAROL] as $reader) {
-            $this->openDashboard($reader);
-            $card = $this->card('New books on the shelf this year (2025)');
+        $this->chooseReader($this->id(PersonFixtures::ALICE));
+        $this->client->request('GET', '/books/start/' . $this->id(BookFixtures::SNOW_CRASH));
+        self::assertResponseIsSuccessful();
 
-            self::assertStringContainsString('The library has received 3 books', $card->text(), $reader);
-            self::assertSame(['Foundation', 'Kindred', 'Snow Crash'], $this->sortedTitles($card), $reader);
-        }
-    }
+        $this->client->request('GET', '/dashboard');
 
-    public function testBooksBoughtThisYearShowTheReadersOwnStatus(): void
-    {
-        $this->openDashboard(PersonFixtures::ALICE);
         self::assertSame(
-            ['Foundation' => '', 'Snow Crash' => '(done)', 'Kindred' => ''],
-            $this->statuses($this->card('New books on the shelf this year (2025)'))
-        );
-
-        $this->openDashboard(PersonFixtures::BOB);
-        self::assertSame(
-            ['Foundation' => '(reading now)', 'Snow Crash' => '', 'Kindred' => ''],
+            ['Snow Crash' => '(reading now)', 'Kindred' => ''],
             $this->statuses($this->card('New books on the shelf this year (2025)'))
         );
     }
 
-    // ── books bought last year ────────────────────────────────
-
-    public function testBooksBoughtLastYearShowsEveryBookBoughtThatYear(): void
-    {
-        foreach ([PersonFixtures::ALICE, PersonFixtures::BOB, PersonFixtures::CAROL] as $reader) {
-            $this->openDashboard($reader);
-            $card = $this->card('Books brought to your shelf last year (2024)');
-
-            self::assertStringContainsString('The library has received 4 books', $card->text(), $reader);
-            self::assertSame(['Neuromancer', 'Project Hail Mary', 'Solaris', 'The Lord of the Rings'], $this->sortedTitles($card), $reader);
-        }
-    }
-
-    public function testBooksBoughtLastYearShowTheReadersOwnStatusAndProgress(): void
+    public function testBooksBoughtLastYearShowTheReadersBooksWithTheirStatusAndProgress(): void
     {
         $this->openDashboard(PersonFixtures::ALICE);
         $card = $this->card('Books brought to your shelf last year (2024)');
+        self::assertStringContainsString('The library has received 3 books', $card->text());
         self::assertSame(
-            ['Neuromancer' => '', 'Project Hail Mary' => '(done)', 'Solaris' => '', 'The Lord of the Rings' => '(reading now)'],
+            ['Project Hail Mary' => '(done)', 'Solaris' => '', 'The Lord of the Rings' => '(reading now)'],
             $this->sortedStatuses($card)
         );
-        self::assertStringContainsString('So you have read 1 books from this list (25%)', $this->normalize($card->text()));
+        self::assertStringContainsString('So you have read 1 books from this list (33.3%)', $this->normalize($card->text()));
 
         $this->openDashboard(PersonFixtures::BOB);
         $card = $this->card('Books brought to your shelf last year (2024)');
-        self::assertSame(
-            ['Neuromancer' => '(done)', 'Project Hail Mary' => '', 'Solaris' => '', 'The Lord of the Rings' => ''],
-            $this->sortedStatuses($card)
-        );
-        self::assertStringContainsString('So you have read 1 books from this list (25%)', $this->normalize($card->text()));
+        self::assertStringContainsString('The library has received 1 books', $card->text());
+        self::assertSame(['Neuromancer' => '(done)'], $this->sortedStatuses($card));
+        self::assertStringContainsString('So you have read 1 books from this list (100%)', $this->normalize($card->text()));
+    }
 
+    public function testBooksBoughtLastYearWithAnEmptyLibrary(): void
+    {
         $this->openDashboard(PersonFixtures::CAROL);
         $card = $this->card('Books brought to your shelf last year (2024)');
-        self::assertStringContainsString('So you have read 0 books from this list (0%)', $this->normalize($card->text()));
+
+        self::assertStringContainsString('The library has received 0 books', $card->text());
+        self::assertSame([], $this->statuses($card));
+        self::assertStringContainsString('So you have read 0 books from this list 0%', $this->normalize($card->text()));
     }
 
-    // ── helpers ───────────────────────────────────────────────
+    public function testLibraryListsOnlyTheReadersBooks(): void
+    {
+        $this->chooseReader($this->id(PersonFixtures::BOB));
+
+        $this->client->request('GET', '/books');
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(['Neuromancer', 'Foundation'], $this->texts('tr[id^="tr-book-"] .book-title'));
+        self::assertSelectorTextContains('.search-container', '2 books found');
+    }
+
+    public function testLibrarySearchByIdDoesNotFindAnotherReadersBook(): void
+    {
+        $this->chooseReader($this->id(PersonFixtures::BOB));
+
+        $this->client->request('GET', '/books?id=' . $this->id(BookFixtures::DUNE));
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([], $this->texts('tr[id^="tr-book-"] .book-title'));
+        self::assertSelectorTextContains('.search-container', '0 books found');
+    }
 
     private function openDashboard(string $reader): void
     {
@@ -196,9 +192,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         self::assertResponseIsSuccessful();
     }
 
-    /**
-     * @return list<string> titles in the "Reading now" card
-     */
     private function readingNow(): array
     {
         return array_map(
@@ -207,9 +200,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         );
     }
 
-    /**
-     * The dashboard card whose heading starts with $heading.
-     */
     private function card(string $heading): Crawler
     {
         $cards = $this->client->getCrawler()->filter('.dashboard-card')->reduce(
@@ -221,25 +211,16 @@ final class DashboardControllerTest extends ApplicationTestCase
         return $cards->first();
     }
 
-    /**
-     * @return list<string> the highlighted values of a card, in order
-     */
     private function stats(string $heading): array
     {
         return $this->card($heading)->filter('.highlight-stat')->each(fn (Crawler $node) => $this->normalize($node->text()));
     }
 
-    /**
-     * @return list<string>
-     */
     private function texts(string $selector): array
     {
         return $this->client->getCrawler()->filter($selector)->each(fn (Crawler $node) => $this->normalize($node->text()));
     }
 
-    /**
-     * @return array<string, string> book title => status shown next to it ("", "(done)" or "(reading now)"), in page order
-     */
     private function statuses(Crawler $card): array
     {
         $statuses = [];
@@ -253,9 +234,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         return $statuses;
     }
 
-    /**
-     * @return array<string, string> like statuses(), sorted by title
-     */
     private function sortedStatuses(Crawler $card): array
     {
         $statuses = $this->statuses($card);
@@ -264,9 +242,6 @@ final class DashboardControllerTest extends ApplicationTestCase
         return $statuses;
     }
 
-    /**
-     * @return list<string> book titles listed in a card, sorted
-     */
     private function sortedTitles(Crawler $card): array
     {
         return array_keys($this->sortedStatuses($card));

@@ -12,22 +12,6 @@ use App\Repository\ReadLogRepository;
 use App\Tests\Integration\DatabaseTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-/**
- * Fixture data used here (see src/DataFixtures/ReadLogFixtures.php):
- *
- * | Log                     | Reader | Book                  | Start      | Finish     |
- * |-------------------------|--------|-----------------------|------------|------------|
- * | ALICE_DUNE              | alice  | Dune                  | 2024-02-01 | 2024-03-10 |
- * | ALICE_HOBBIT_FIRST      | alice  | The Hobbit            | 2024-07-01 | 2024-07-12 |
- * | ALICE_HOBBIT_REREAD     | alice  | The Hobbit            | 2025-01-05 | 2025-01-15 |
- * | ALICE_PROJECT_HAIL_MARY | alice  | Project Hail Mary     | 2025-02-10 | 2025-02-10 |
- * | ALICE_LOTR              | alice  | The Lord of the Rings | 2025-03-01 | -          |
- * | ALICE_SNOW_CRASH        | alice  | Snow Crash            | 2025-06-01 | 2025-06-22 |
- * | BOB_NEUROMANCER         | bob    | Neuromancer           | 2025-04-01 | 2025-04-20 |
- * | BOB_FOUNDATION          | bob    | Foundation            | 2025-05-02 | -          |
- *
- * carol has no logs.
- */
 final class ReadLogRepositoryTest extends DatabaseTestCase
 {
     private ReadLogRepository $repository;
@@ -38,11 +22,6 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
         $this->repository = $this->entityManager->getRepository(ReadLog::class);
     }
 
-    // ── findByYear ────────────────────────────────────────────
-
-    /**
-     * @param list<string> $expectedLogs
-     */
     #[DataProvider('findByYearProvider')]
     public function testFindByYearReturnsLogsFinishedThatYearOrderedByFinishDate(string $reader, int $year, array $expectedLogs): void
     {
@@ -77,7 +56,7 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
     {
         $this->inRolledBackTransaction(function () {
             $alice = $this->entityManager->getReference(Person::class, $this->id(PersonFixtures::ALICE));
-            $book = $this->entityManager->getReference(Book::class, $this->id(BookFixtures::FOUNDATION));
+            $book = $this->entityManager->getReference(Book::class, $this->id(BookFixtures::KINDRED));
 
             $lastDayOf2023 = $this->createLog($alice, $book, '2023-12-31');
             $firstDayOf2026 = $this->createLog($alice, $book, '2026-01-01');
@@ -93,11 +72,6 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
         });
     }
 
-    // ── findByReaderAndTitle / countByReaderAndTitle ───────────
-
-    /**
-     * @param list<string> $expectedLogs
-     */
     #[DataProvider('searchProvider')]
     public function testFindByReaderAndTitle(string $reader, string $title, array $expectedLogs): void
     {
@@ -106,9 +80,6 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
         self::assertSame($this->ids($expectedLogs), $this->logIds($logs));
     }
 
-    /**
-     * @param list<string> $expectedLogs
-     */
     #[DataProvider('searchProvider')]
     public function testCountByReaderAndTitleMatchesFind(string $reader, string $title, array $expectedLogs): void
     {
@@ -178,13 +149,13 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
     {
         $this->inRolledBackTransaction(function () {
             $bob = $this->entityManager->getReference(Person::class, $this->id(PersonFixtures::BOB));
-            $book = $this->entityManager->getReference(Book::class, $this->id(BookFixtures::CLEAN_CODE));
+            $book = $this->entityManager->getReference(Book::class, $this->id(BookFixtures::NEUROMANCER));
 
             $first = $this->createLog($bob, $book, null, '2020-01-01');
             $second = $this->createLog($bob, $book, null, '2020-01-01');
 
-            $page1 = $this->repository->findByReaderAndTitle($this->id(PersonFixtures::BOB), 'Clean', 1, 0);
-            $page2 = $this->repository->findByReaderAndTitle($this->id(PersonFixtures::BOB), 'Clean', 1, 1);
+            $page1 = $this->repository->findByReaderAndTitle($this->id(PersonFixtures::BOB), 'Neuromancer', 1, 0);
+            $page2 = $this->repository->findByReaderAndTitle($this->id(PersonFixtures::BOB), 'Neuromancer', 1, 1);
 
             self::assertSame([$first->getId()], $this->logIds($page1));
             self::assertSame([$second->getId()], $this->logIds($page2));
@@ -207,21 +178,11 @@ final class ReadLogRepositoryTest extends DatabaseTestCase
         self::assertSame([], $this->repository->findByYear(2025, -1));
     }
 
-    // ── helpers ───────────────────────────────────────────────
-
-    /**
-     * @param list<string> $references
-     * @return list<int>
-     */
     private function ids(array $references): array
     {
         return array_map(fn (string $reference) => $this->id($reference), $references);
     }
 
-    /**
-     * @param ReadLog[] $logs
-     * @return list<int>
-     */
     private function logIds(array $logs): array
     {
         return array_map(fn (ReadLog $log) => $log->getId(), $logs);
