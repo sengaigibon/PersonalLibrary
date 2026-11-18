@@ -7,6 +7,7 @@ use App\Entity\Book;
 use App\Repository\BookRepository;
 use App\Repository\ReadLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -15,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session, Request $request): Response
+    public function index(BookRepository $bookRepository, ReadLogRepository $readLogRepository, SessionInterface $session, Request $request, ClockInterface $clock): Response
     {
         $readerId = $request->query->get('readerId') ?: $session->get('current_reader_id');
     
@@ -27,7 +28,7 @@ final class DashboardController extends AbstractController
         // Store readerId in session for future requests
         $session->set('current_reader_id', $readerId);
 
-        $currentYear = (int) new \DateTime()->format('Y');
+        $currentYear = (int) $clock->now()->format('Y');
         $currentYearReadLogs = $readLogRepository->findByYear($currentYear, $readerId);
         $booksReadingNow = $bookRepository->findReadingNow($readerId);
         $booksReadCurrentYearCount = [];
