@@ -35,7 +35,7 @@ final class DashboardController extends AbstractController
         $readingTime = 0;
         $pages = 0;
 
-        $librarySize = $bookRepository->count();
+        $librarySize = $bookRepository->count(['owner' => $readerId]);
         $totalFinished = $bookRepository->countBySearchCriteria($readerId, '', '', Book::STATUS_FINISHED);
 
 
@@ -103,14 +103,14 @@ final class DashboardController extends AbstractController
         $offset = ($page - 1) * $limit;
 
         if (!empty($idSearch)) {
-            $totalBooks = $bookRepository->count(['id' => $idSearch]);
-            $books = $bookRepository->findBy(['id' => $idSearch], ['id' => 'ASC'], $limit, $offset);
+            $totalBooks = $bookRepository->count(['id' => $idSearch, 'owner' => $readerId]);
+            $books = $bookRepository->findBy(['id' => $idSearch, 'owner' => $readerId], ['id' => 'ASC'], $limit, $offset);
         } elseif (!empty($titleSearch) || !empty($authorSearch) || !empty($statusSearch)) {
             $books = $bookRepository->findBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch, $limit, $offset);
             $totalBooks = $bookRepository->countBySearchCriteria($readerId, $titleSearch, $authorSearch, $statusSearch);
         } else {
-            $totalBooks = $bookRepository->count([]);
-            $books = $bookRepository->findBy([], ['id' => 'ASC'], $limit, $offset);
+            $totalBooks = $bookRepository->count(['owner' => $readerId]);
+            $books = $bookRepository->findBy(['owner' => $readerId], ['id' => 'ASC'], $limit, $offset);
         }
 
         $totalPages = (int) ceil($totalBooks / $limit);

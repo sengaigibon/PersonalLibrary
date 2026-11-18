@@ -6,6 +6,7 @@ use App\Entity\Book;
 use App\Entity\ReadLog;
 use App\Form\ReadLogType;
 use App\Repository\PersonRepository;
+use App\Services\CurrentReader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,11 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/read/log')]
 final class ReadLogController extends AbstractController
 {
+    public function __construct(
+        private CurrentReader $currentReader,
+    ) {
+    }
+
     #[Route('/new', name: 'app_read_log_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, PersonRepository $personRepository): Response
     {
@@ -31,7 +37,7 @@ final class ReadLogController extends AbstractController
         }
 
         $readLog = new ReadLog();
-        $form = $this->createForm(ReadLogType::class, $readLog);
+        $form = $this->createForm(ReadLogType::class, $readLog, ['owner_id' => (int) $readerId]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -60,6 +66,13 @@ final class ReadLogController extends AbstractController
                 'status' => false,
                 'message' => 'No reader has been set, go to the welcome page',
             ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!$this->currentReader->owns($book)) {
+            return $this->json([
+                'status' => false,
+                'message' => 'Book not found',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         $readLog = new ReadLog();
@@ -122,6 +135,11 @@ final class ReadLogController extends AbstractController
     #[Route('/{id}', name: 'app_read_log_show', methods: ['GET'])]
     public function show(ReadLog $readLog): Response
     {
+        if (!$this->currentReader->getId()) {
+            return $this->redirectToWelcomePage();
+        }
+        $this->denyUnlessOwner($readLog);
+
         return $this->render('dashboard/index.html.twig', [
             'currentPage' => 'show-log',
             'read_log' => $readLog,
@@ -131,11 +149,16 @@ final class ReadLogController extends AbstractController
     #[Route('/{id}/edit', name: 'app_read_log_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, ReadLog $readLog, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->currentReader->getId()) {
+            return $this->redirectToWelcomePage();
+        }
+        $this->denyUnlessOwner($readLog);
+
         // Get pagination parameters to preserve them
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 20);
 
-        $form = $this->createForm(ReadLogType::class, $readLog);
+        $form = $this->createForm(ReadLogType::class, $readLog, ['owner_id' => $this->currentReader->getId()]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -155,6 +178,11 @@ final class ReadLogController extends AbstractController
     #[Route('/{id}', name: 'app_read_log_delete', methods: ['POST'])]
     public function delete(Request $request, ReadLog $readLog, EntityManagerInterface $entityManager): Response
     {
+        if (!$this->currentReader->getId()) {
+            return $this->redirectToWelcomePage();
+        }
+        $this->denyUnlessOwner($readLog);
+
         if ($this->isCsrfTokenValid('delete'.$readLog->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($readLog);
             $entityManager->flush();
@@ -164,5 +192,19 @@ final class ReadLogController extends AbstractController
             'page' => $request->query->getInt('page', 1),
             'limit' => $request->query->getInt('limit', 20),
         ], Response::HTTP_SEE_OTHER);
+    }
+
+    private function denyUnlessOwner(ReadLog $readLog): void
+    {
+        if (!$readLog->getBook() || !$this->currentReader->owns($readLog->getBook())) {
+            throw $this->createNotFoundException('Reading log not found');
+        }
+    }
+
+    private function redirectToWelcomePage(): Response
+    {
+        $this->addFlash('error', 'Choose a reader please');
+
+        return $this->redirectToRoute('app_main');
     }
 }
