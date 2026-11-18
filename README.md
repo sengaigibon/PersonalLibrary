@@ -222,6 +222,8 @@ The fixtures live in `src/DataFixtures/` and use fixed values so tests can asser
 
 The status of each book per reader is documented in `BookFixtures.php`. Each fixture has a reference constant (e.g. `BookFixtures::DUNE`) that you can use to identify it in tests.
 
+Integration tests live in `tests/Integration/` and extend `DatabaseTestCase`. It reloads the fixtures before each test class, provides `$this->id(BookFixtures::DUNE)` to get a fixture's database id, and `inRolledBackTransaction()` for tests that add data. It refuses to run against any database that isn't a `_test` database.
+
 ### Clearing Cache
 ```bash
 php bin/console cache:clear
