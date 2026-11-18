@@ -44,6 +44,9 @@ composer-install: ## Install Composer dependencies inside the app container
 migrate: ## Run Doctrine migrations inside the app container
 	$(CONSOLE) doctrine:migrations:migrate
 
+create-reader: ## Create a new reader (asks for nickname and full name)
+	$(CONSOLE) app:reader:create
+
 # ── Symfony Console ───────────────────────────────────────────
 
 cache-clear: ## Clear Symfony cache
