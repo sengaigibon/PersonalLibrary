@@ -140,7 +140,7 @@ ReadingLog/
    ```
    The command asks for a nickname and a full name. You can also pass them directly:
    ```bash
-   podman-compose exec app php bin/console app:reader:create jdoe "John Doe"
+   podman-compose exec -u www-data app php bin/console app:reader:create jdoe "John Doe"
    ```
    The app can't be used without a reader: the welcome page only lets you choose an existing reader. Run the command again to add more readers.
 
@@ -203,6 +203,25 @@ php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
 
+### Testing
+
+Integration tests use a separate database: the main database name with a `_test` suffix (e.g. `app_test`), configured in `config/packages/doctrine.yaml`. Your development data is never touched.
+
+```bash
+make test-db         # (re)create the test database, run migrations and load the fixtures
+make test-fixtures   # reload the fixtures only (purges the test database first)
+make test            # run the tests
+```
+
+Run `make test-db` once after setting up the project, and again after adding a migration.
+
+The fixtures live in `src/DataFixtures/` and use fixed values so tests can assert exact results:
+- **Readers**: `alice` (main reader) and `bob` (used to check that data is scoped per reader)
+- **Books**: 6 books covering every status (unread, reading, finished, finished twice) and one reference book
+- **Read logs**: 6 logs between 2024 and 2025
+
+The status of each book per reader is documented in `BookFixtures.php`. Each fixture has a reference constant (e.g. `BookFixtures::DUNE`) that you can use to identify it in tests.
+
 ### Clearing Cache
 ```bash
 php bin/console cache:clear
@@ -254,8 +273,13 @@ make migrate
 **Check that everything is running:**
 ```bash
 podman-compose ps
-podman-compose logs -f app
+podman-compose logs -f app   # nginx / php-fpm output
+make logs                    # Symfony's dev.log
 ```
+
+**Cache, logs and file ownership:** inside the container, Symfony writes its cache and logs to `/tmp/symfony` (`APP_CACHE_DIR` and `APP_LOG_DIR` in `compose.yaml`), not to the project's `./var`. The host and the container each have their own cache, so `php bin/console` works on the host too and `./var` stays owned by you.
+
+When you run PHP commands in the container yourself, run them as `www-data` (the same user as php-fpm): `podman-compose exec -u www-data app php bin/console ...`. The `make` targets already do this. `make shell` opens a shell as `www-data`; use `make shell-root` only for system tasks.
 The app is served at http://localhost:8081.
 
 ## 🎯 API Endpoints
