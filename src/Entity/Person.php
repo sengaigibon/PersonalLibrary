@@ -28,9 +28,24 @@ class Person implements JsonSerializable
     #[ORM\OneToMany(targetEntity: ReadLog::class, mappedBy: 'Reader')]
     private Collection $Readings;
 
+    /**
+     * @var Collection<int, Book>
+     */
+    #[ORM\OneToMany(targetEntity: Book::class, mappedBy: 'owner')]
+    private Collection $books;
+
     public function __construct()
     {
         $this->Readings = new ArrayCollection();
+        $this->books = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Book>
+     */
+    public function getBooks(): Collection
+    {
+        return $this->books;
     }
 
     public function getId(): ?int
